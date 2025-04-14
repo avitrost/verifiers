@@ -9,11 +9,12 @@ from datasets import Dataset
 from pydantic import BaseModel
 from ..imports import LLM, SamplingParams  # type: ignore
 from verifiers.inference.vllm_client import VLLMClient
-from verifiers.prompts import SCRATCHPAD_PROMPT
+from verifiers.prompts import SCRATCHPAD_PROMPT, FIRST_SCRATCHPAD_PROMPT
+from verifiers.rubrics import MathVerifyRubric
 from verifiers import RewardFunc
 
 from verifiers.envs.environment import Environment
-from verifiers.utils import format_dataset
+from verifiers.utils import format_dataset, extract_solution
 
 class ChatOutput(BaseModel):
     token_ids: List[int]
@@ -55,12 +56,13 @@ class ScratchpadEnv(Environment):
                  max_workers: int = 10,
                  max_steps: int = 10,
                  sleep_time: float = 1.0,
-                 verifier_func: RewardFunc = None,
+                 max_tries: int = 5,
                  **kwargs):
         super().__init__(**kwargs)
-        assert verifier_func is not None, "Verifier function must be provided"
-        self.verifier_func = verifier_func
         self.system_prompt = system_prompt
+        self.max_tries = max_tries
+        self.rubric = MathVerifyRubric()
+        self.verifier_func = self.rubric.get_reward_funcs()[0]  # TODO: edit if i have more
         # self.few_shot = few_shot
         if dataset is not None:
             self.dataset = format_dataset(
@@ -91,6 +93,9 @@ class ScratchpadEnv(Environment):
         self.sleep_time = sleep_time
         self.max_steps = max_steps
 
+    def get_reward_funcs(self, **kwargs: Any) -> List[RewardFunc]:
+        return self.rubric.get_reward_funcs()
+
     def get_dataset(self, n: int = -1, seed: int = 0, **kwargs: Any) -> Dataset | None:
         if n > 0 and self.dataset is not None:
             return self.dataset.shuffle(seed=seed).select(range(n)) # type: ignore
@@ -100,16 +105,55 @@ class ScratchpadEnv(Environment):
         if n > 0 and self.eval_dataset is not None:
             return self.eval_dataset.shuffle(seed=seed).select(range(n)) # type: ignore
         return self.eval_dataset
-
-    def is_completed(self, messages: List[Dict[str, str]], **kwargs: Any) -> bool:
-        answer = self.extract_answer(messages) # TODO: implement
-        is_correct = self.verifier_func(answer)
+    
+    def count_responses(self, messages: List[Dict[str, str]]) -> int:
+        """
+        Count the number of responses in the messages.
+        """
+        count = 0
+        for message in messages:
+            if message["role"] == "assistant":
+                count += 1
+        return count
+    
+    def is_completed(self, messages: List[Dict[str, str]], answer: str, **kwargs: Any) -> bool:
+        response = messages[-1][-1]["content"]
+        is_correct = self.verifier_func(response, answer)
         is_final = self.count_responses(messages) >= self.max_tries
         completed = is_correct or is_final
         return completed
 
-    def env_response(self, messages: List[Dict[str, str]], **kwargs: Any) -> Dict[str, str]:
-        pass
+    def extract_context(self, messages: List[Dict[str, str]]) -> str:
+        """
+        Extract the context from the messages.
+        """
+        message_string = messages[-1][-1]["content"]
+        try:
+            # Find the start and end of the attempt block
+            start_idx = message_string.find("<attempt>")
+            end_idx = message_string.find("</attempt>")
+            
+            if start_idx != -1 and end_idx != -1:
+                # Extract the content between the tags, excluding the tags themselves
+                context = message_string[start_idx + len("<attempt>"):end_idx].strip()
+            else:
+                # If tags not found, return empty string
+                raise ValueError("Attempt tags not found in message string.")
+            
+            return context
+        except Exception as e:
+            print(f"Error extracting context: {e}")
+            return ""
+    
+    def create_new_prompt(self, messages: List[Dict[str, str]], original_prompt: str) -> str:  # TODO: add try number? 
+        context = self.extract_context(messages)
+        new_prompt = "<previous_attempts>\n" + context + "\n<\previous_attempts>\n" + original_prompt
+        return new_prompt
+
+    def env_response(self, messages: List[Dict[str, str]], original_prompt: str, **kwargs: Any) -> Dict[str, str]:
+        content = self.create_new_prompt(messages, original_prompt)
+        new_prompt = [{"role": "user", "content": content}]
+        return new_prompt
 
     def step(self,
              states: List[Dict[str, Any]],
@@ -171,12 +215,12 @@ class ScratchpadEnv(Environment):
             # if len(state["completion_mask"][-1]) > len(state["completion_ids"]): # type: ignore
             #     state["completion_mask"][-1] = state["completion_mask"][-1][:len(state["completion_ids"])] # type: ignore
             
-            if self.is_completed(state["messages"]): # or len(state["completion_ids"]) > sampling_params.max_tokens - 1: # type: ignore
+            if self.is_completed(state["messages"], state["answer"]): # or len(state["completion_ids"]) > sampling_params.max_tokens - 1: # type: ignore
                 state["completed"] = True
                 # state["completion_ids"] = state["completion_ids"][:sampling_params.max_tokens] TODO: check this
                 # state["completion_mask"][-1] = state["completion_mask"][-1][:len(state["completion_ids"])]
             else:
-                state["messages"].append(self.env_response(state["messages"]))
+                state["messages"].append(self.env_response(state["messages"], state["original_prompt"]))
 
             # enforce that the completion mask and completion ids are the same length
             # weird bug that happens rarely and only for certain models; something tokenizer related :(
@@ -204,6 +248,7 @@ class ScratchpadEnv(Environment):
         return states
 
     def generate(self, prompts: List[List[Dict[str, Any]]],
+                 answers: List[str],
                  llm: LLM | VLLMClient,  
                  sampling_params: SamplingParams,
                  **kwargs: Any) -> Dict[str, List[Sequence[int]] | List[str] |  List[List[Dict[str, Any]]]]:
@@ -219,8 +264,10 @@ class ScratchpadEnv(Environment):
             "prompt_ids": [],
             "completed": False,
             "completion_ids": [],
-            "completion_mask": []
-        } for m in prompts]
+            "completion_mask": [],
+            "answer": answer,
+            "original_prompt": m,  # TODO: get the actual prompt from this
+        } for m, answer in zip(prompts, answers)]
 
         # main loop
         while not all_completed:

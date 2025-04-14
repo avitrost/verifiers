@@ -51,7 +51,7 @@ def nanstd(tensor: torch.Tensor) -> torch.Tensor:
     variance *= count / (count - 1)  # Bessel's correction
     return torch.sqrt(variance)
 
-class GRPOEnvTrainer(GRPOTrainer):
+class GRPOScratchpadEnvTrainer(GRPOTrainer):
     def __init__(
             self,
             model: Union[str, PreTrainedModel],
@@ -124,6 +124,8 @@ class GRPOEnvTrainer(GRPOTrainer):
                 llm=self.vllm_client, # type: ignore
                 sampling_params=self.sampling_params,
             )
+
+            # will be lists
             completion_ids = env_result['ids']
             completion_messages = env_result['messages']
             completion_mask = env_result['mask']
@@ -142,46 +144,65 @@ class GRPOEnvTrainer(GRPOTrainer):
             (self.accelerator.process_index + 1) * len(prompts),
         )
 
-        completion_ids = completion_ids[process_slice]
-        completion_messages = completion_messages[process_slice]
-        completion_mask = completion_mask[process_slice]
+        total_completion_ids = completion_ids[process_slice]
+        total_completion_messages = completion_messages[process_slice]
+        total_completion_mask = completion_mask[process_slice]
 
         # Pad + mask after per-sequence EOS tokens
-        completion_ids = [torch.tensor(ids, device=device) for ids in completion_ids]
-        completion_ids = pad(completion_ids, padding_value=self.processing_class.pad_token_id) # type: ignore
 
-        completion_mask = [torch.tensor(mask, device=device) for mask in completion_mask]
-        completion_mask = pad(completion_mask, padding_value=0)
+        lst_old_per_token_logps = []
+        lst_ref_per_token_logps = []
+        lst_completion_ids = []
+        lst_completion_mask = []
 
-        prompt_completion_ids = torch.cat([prompt_ids, completion_ids], dim=1)
-        attention_mask = torch.cat([prompt_mask, completion_mask], dim=1) # (B, P+C)
+        num_tries = total_completion_ids.shape[1]
+        for i in range(num_tries):
+            completion_ids = total_completion_ids[:, i]
+            completion_messages = total_completion_messages[:, i]
+            completion_mask = total_completion_mask[:, i]
+            
+            completion_ids = [torch.tensor(ids, device=device) for ids in completion_ids]
+            completion_ids = pad(completion_ids, padding_value=self.processing_class.pad_token_id) # type: ignore
+
+            completion_mask = [torch.tensor(mask, device=device) for mask in completion_mask]
+            completion_mask = pad(completion_mask, padding_value=0)
+
+            prompt_completion_ids = torch.cat([prompt_ids, completion_ids], dim=1)
+            attention_mask = torch.cat([prompt_mask, completion_mask], dim=1) # (B, P+C)
         
-        logits_to_keep = completion_ids.size(1)
+            # TODO: check this
+            logits_to_keep = completion_ids.size(1)
 
-        with torch.no_grad():
-            # When using num_iterations == 1, old_per_token_logps == per_token_logps, so we can skip it's
-            # computation here, and use per_token_logps.detach() instead.
-            if self.num_iterations > 1:
-                old_per_token_logps = self._get_per_token_logps(
-                    self.model, prompt_completion_ids, attention_mask, logits_to_keep
-                )
-            else:
-                old_per_token_logps = None
-
-            if self.beta == 0.0:
-                ref_per_token_logps = None
-            elif self.ref_model is not None:
-                ref_per_token_logps = self._get_per_token_logps(
-                    self.ref_model, prompt_completion_ids, attention_mask, logits_to_keep
-                )
-            else:
-                with self.accelerator.unwrap_model(self.model).disable_adapter():
-                    ref_per_token_logps = self._get_per_token_logps(
+            # TODO: split up and concatenate the per token logps, result will be same dims as original(?). everything else same after?
+            with torch.no_grad():
+                # When using num_iterations == 1, old_per_token_logps == per_token_logps, so we can skip it's
+                # computation here, and use per_token_logps.detach() instead.
+                if self.num_iterations > 1:
+                    old_per_token_logps = self._get_per_token_logps(
                         self.model, prompt_completion_ids, attention_mask, logits_to_keep
                     )
+                else:
+                    old_per_token_logps = None
 
+                if self.beta == 0.0:
+                    ref_per_token_logps = None
+                elif self.ref_model is not None:
+                    ref_per_token_logps = self._get_per_token_logps(
+                        self.ref_model, prompt_completion_ids, attention_mask, logits_to_keep
+                    )
+                else:
+                    with self.accelerator.unwrap_model(self.model).disable_adapter():
+                        ref_per_token_logps = self._get_per_token_logps(
+                            self.model, prompt_completion_ids, attention_mask, logits_to_keep
+                        )
+            lst_old_per_token_logps.append(old_per_token_logps)
+            lst_ref_per_token_logps.append(ref_per_token_logps)
+            lst_completion_ids.append(completion_ids)
+            lst_completion_mask.append(completion_mask)
+        
         # use message dicts for reward function inputs
-        completions = completion_messages
+        completions = completion_messages  # this is the final iterate so this is correct to put outside loop (assuming the num tries is constant for all)
+
         rewards_per_func = torch.zeros(len(prompts), len(self.reward_funcs), device=device)
         for i, reward_func in enumerate(self.reward_funcs):
             # Repeat all input columns (but "prompt" and "completion") to match the number of generations
@@ -272,12 +293,17 @@ class GRPOEnvTrainer(GRPOTrainer):
                     df = pd.DataFrame(table)
                     wandb.log({"completions": wandb.Table(dataframe=df)}) # type: ignore
 
+        concatenated_old_per_token_logps = torch.cat(lst_old_per_token_logps, dim=-1) if self.num_iterations > 1 else None
+        concatenated_ref_per_token_logps = torch.cat(lst_ref_per_token_logps, dim=-1)
+        concatenated_completion_ids = torch.cat(lst_completion_ids, dim=-1)
+        concatenated_completion_mask = torch.cat(lst_completion_mask, dim=-1)
+        
         return {
             "prompt_ids": prompt_ids,
             "prompt_mask": prompt_mask,
-            "completion_ids": completion_ids,
-            "completion_mask": completion_mask,
-            "old_per_token_logps": old_per_token_logps,
-            "ref_per_token_logps": ref_per_token_logps,
+            "completion_ids": concatenated_completion_ids,
+            "completion_mask": concatenated_completion_mask,
+            "old_per_token_logps": concatenated_old_per_token_logps,
+            "ref_per_token_logps": concatenated_ref_per_token_logps,
             "advantages": advantages,
         }

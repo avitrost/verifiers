@@ -40,8 +40,22 @@ Tools expect specific JSON input formats. Follow the examples carefully.
 Do not make up tools or arguments that aren't listed.
 """
 
-SCRATCHPAD_PROMPT = """
+FIRST_SCRATCHPAD_PROMPT = """
 Respond in the following format, using careful step-by-step reasoning. Once answered, briefly summarize your attempt in the <attempt> tag.
+
+<reasoning>
+...
+</reasoning>
+<answer>
+...
+</answer>
+<attempt>
+...
+</attempt>
+"""
+
+SCRATCHPAD_PROMPT = """
+Respond in the following format, using careful step-by-step reasoning, and utilizing the following information summarizing previous failed attempts (provided in <previous_attempts>...</previous_attempts> if not the very first try). Once answered, briefly summarize your attempt in the <attempt> tag.
 
 <reasoning>
 ...

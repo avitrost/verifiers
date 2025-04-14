@@ -7,6 +7,7 @@ from .envs.code_env import CodeEnv
 from .envs.doublecheck_env import DoubleCheckEnv
 from .envs.simple_env import SimpleEnv
 from .envs.tool_env import ToolEnv
+from .envs.scratchpad_env import ScratchpadEnv
 from .trainers.grpo_env_trainer import GRPOEnvTrainer
 from .utils.data_utils import extract_boxed_answer, extract_hash_answer, preprocess_dataset
 from .utils.model_utils import get_model, get_tokenizer, get_model_and_tokenizer
@@ -25,6 +26,7 @@ __all__ = [
     "DoubleCheckEnv",
     "SimpleEnv",
     "ToolEnv",
+    "ScratchpadEnv",
     "GRPOEnvTrainer",
     "get_model",
     "get_tokenizer",
