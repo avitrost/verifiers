@@ -630,7 +630,7 @@ def is_latex_equal(given_answer: str, ground_truth: str) -> bool:
                         ),
                         fallback_mode="no_fallback",
                         extraction_mode=["first_match"],
-                        parsing_timeout=1,
+                        parsing_timeout=0, # TODO: check timeout
                     ),
                     parse(
                         given_answer,
@@ -640,9 +640,9 @@ def is_latex_equal(given_answer: str, ground_truth: str) -> bool:
                         ),
                         fallback_mode="no_fallback",
                         extraction_mode=["first_match"],
-                        parsing_timeout=1,
+                        parsing_timeout=0, # TODO: check timeout
                     ),
-                    timeout_seconds=1,
+                    timeout_seconds=0, # TODO: check timeout
                 )
                 # or symbolic_equal(ground_truth, given_answer)
             except Exception:
