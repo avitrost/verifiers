@@ -53,7 +53,7 @@ class ScratchpadEnv(Environment):
                 #  few_shot: List[Dict[str, str]] = [],
                  sampling_args: Dict[str, Any] = {},
                  mask_env_response: bool = True,
-                 max_workers: int = 10,
+                 max_workers: int = 1,
                  max_steps: int = 10,
                  sleep_time: float = 1.0,
                  max_tries: int = 5,

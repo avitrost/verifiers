@@ -26,7 +26,7 @@ eval_dataset = concatenate_datasets([eval_aime24, eval_aime25]).shuffle(seed=0)
 vf_env = vf.ScratchpadEnv(
     dataset=dataset,
     eval_dataset=eval_dataset,
-    max_tries=5,
+    max_tries=3,
 )
 print(vf_env.system_prompt)
 
@@ -51,7 +51,7 @@ training_args=GRPOConfig(
     max_completion_length=2048,
     per_device_train_batch_size=12,
     per_device_eval_batch_size=12,
-    num_generations=6,
+    num_generations=1,
     gradient_accumulation_steps=1,
     gradient_checkpointing=True,
     eval_strategy="steps",
