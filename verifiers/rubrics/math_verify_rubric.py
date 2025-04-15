@@ -1,5 +1,5 @@
 from verifiers.rubrics import Rubric
-from verifiers.utils.math_utils import is_latex_equal
+from verifiers.rubrics import is_latex_equal
 
 
 class MathVerifyRubric(Rubric):
