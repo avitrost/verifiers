@@ -21,6 +21,8 @@ import signal
 from itertools import islice, zip_longest
 from math import isclose
 from typing import Optional
+import time
+import threading
 
 import sympy
 from latex2sympy2_extended import latex2sympy
@@ -490,20 +492,43 @@ def repeatness(s: str):
     return (cnt * 2 / (n * (n + 1))) > 0.2
 
 
+# class timeout:
+#     def __init__(self, seconds=1, error_message="Timeout"):
+#         self.seconds = seconds
+#         self.error_message = error_message
+
+#     def handle_timeout(self, signum, frame):
+#         raise TimeoutError(self.error_message)
+
+#     def __enter__(self):
+#         signal.signal(signal.SIGALRM, self.handle_timeout)
+#         signal.alarm(self.seconds)
+
+#     def __exit__(self, type, value, traceback):
+#         signal.alarm(0)
+
 class timeout:
     def __init__(self, seconds=1, error_message="Timeout"):
         self.seconds = seconds
         self.error_message = error_message
+        self._timer = None
+        self._timeout_occurred = False
 
-    def handle_timeout(self, signum, frame):
-        raise TimeoutError(self.error_message)
+    def _raise_timeout(self):
+        self._timeout_occurred = True
+        # This will interrupt sleep or long-blocking calls only if they are implemented to be interruptible.
+        # Otherwise, we'll raise in `__exit__`
+        # A better way is to run the block in another thread, see below for that version.
 
     def __enter__(self):
-        signal.signal(signal.SIGALRM, self.handle_timeout)
-        signal.alarm(self.seconds)
+        self._timer = threading.Timer(self.seconds, self._raise_timeout)
+        self._timer.start()
+        return self
 
-    def __exit__(self, type, value, traceback):
-        signal.alarm(0)
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._timer.cancel()
+        if self._timeout_occurred:
+            raise TimeoutError(self.error_message)
 
 
 def latex_eval(latex):
@@ -598,110 +623,110 @@ def _is_latex_equal(str1, str2):
     return False
 
 
-# def is_latex_equal(given_answer: str, ground_truth: str) -> bool:
-#     try:
-#         with timeout(1):
-#             try:
-#                 if (len(given_answer) > 128 and repeatness(given_answer)) or (
-#                     len(ground_truth) > 128 and repeatness(ground_truth)
-#                 ):
-#                     return False
-#                 # First conduct normalized string matching.
-#                 ground_truth_normalized = _normalize(ground_truth)
-#                 given_normalized = _normalize(given_answer)
-#                 if ground_truth_normalized is None:
-#                     return False
-#                 if ground_truth_normalized == given_normalized:
-#                     return True
-
-#                 # Next call math verify.
-#                 given_answer.replace("\n", "")
-#                 ground_truth.replace("\n", "")
-#                 if not "$" in given_answer:
-#                     given_answer = f"${given_answer}$"
-#                 if not "$" in ground_truth:
-#                     ground_truth = f"${ground_truth}$"
-#                 return verify(
-#                     parse(
-#                         ground_truth,
-#                         extraction_config=(
-#                             LatexExtractionConfig(boxed_match_priority=0),
-#                             ExprExtractionConfig(),
-#                         ),
-#                         fallback_mode="no_fallback",
-#                         extraction_mode=["first_match"],
-#                         parsing_timeout=0, # TODO: check timeout
-#                     ),
-#                     parse(
-#                         given_answer,
-#                         extraction_config=(
-#                             LatexExtractionConfig(boxed_match_priority=0),
-#                             ExprExtractionConfig(),
-#                         ),
-#                         fallback_mode="no_fallback",
-#                         extraction_mode=["first_match"],
-#                         parsing_timeout=0, # TODO: check timeout
-#                     ),
-#                     timeout_seconds=0, # TODO: check timeout
-#                 )
-#                 # or symbolic_equal(ground_truth, given_answer)
-#             except Exception:
-#                 return False
-#     except TimeoutError:
-#         return False
-
-
 def is_latex_equal(given_answer: str, ground_truth: str) -> bool:
-    # try:
-    #     with timeout(1):
     try:
-        if (len(given_answer) > 128 and repeatness(given_answer)) or (
-            len(ground_truth) > 128 and repeatness(ground_truth)
-        ):
-            return False
-        # First conduct normalized string matching.
-        ground_truth_normalized = _normalize(ground_truth)
-        given_normalized = _normalize(given_answer)
-        if ground_truth_normalized is None:
-            return False
-        if ground_truth_normalized == given_normalized:
-            return True
+        with timeout(1):
+            try:
+                if (len(given_answer) > 128 and repeatness(given_answer)) or (
+                    len(ground_truth) > 128 and repeatness(ground_truth)
+                ):
+                    return False
+                # First conduct normalized string matching.
+                ground_truth_normalized = _normalize(ground_truth)
+                given_normalized = _normalize(given_answer)
+                if ground_truth_normalized is None:
+                    return False
+                if ground_truth_normalized == given_normalized:
+                    return True
 
-        # Next call math verify.
-        given_answer.replace("\n", "")
-        ground_truth.replace("\n", "")
-        if not "$" in given_answer:
-            given_answer = f"${given_answer}$"
-        if not "$" in ground_truth:
-            ground_truth = f"${ground_truth}$"
-        return verify(
-            parse(
-                ground_truth,
-                extraction_config=(
-                    LatexExtractionConfig(boxed_match_priority=0),
-                    ExprExtractionConfig(),
-                ),
-                fallback_mode="no_fallback",
-                extraction_mode=["first_match"],
-                parsing_timeout=1,
-            ),
-            parse(
-                given_answer,
-                extraction_config=(
-                    LatexExtractionConfig(boxed_match_priority=0),
-                    ExprExtractionConfig(),
-                ),
-                fallback_mode="no_fallback",
-                extraction_mode=["first_match"],
-                parsing_timeout=1,
-            ),
-            timeout_seconds=1,
-        )
-        # or symbolic_equal(ground_truth, given_answer)
-    except Exception:
+                # Next call math verify.
+                given_answer.replace("\n", "")
+                ground_truth.replace("\n", "")
+                if not "$" in given_answer:
+                    given_answer = f"${given_answer}$"
+                if not "$" in ground_truth:
+                    ground_truth = f"${ground_truth}$"
+                return verify(
+                    parse(
+                        ground_truth,
+                        extraction_config=(
+                            LatexExtractionConfig(boxed_match_priority=0),
+                            ExprExtractionConfig(),
+                        ),
+                        fallback_mode="no_fallback",
+                        extraction_mode=["first_match"],
+                        parsing_timeout=1,
+                    ),
+                    parse(
+                        given_answer,
+                        extraction_config=(
+                            LatexExtractionConfig(boxed_match_priority=0),
+                            ExprExtractionConfig(),
+                        ),
+                        fallback_mode="no_fallback",
+                        extraction_mode=["first_match"],
+                        parsing_timeout=1,
+                    ),
+                    timeout_seconds=1,
+                )
+                # or symbolic_equal(ground_truth, given_answer)
+            except Exception:
+                return False
+    except TimeoutError:
         return False
-    # except TimeoutError:
-    #     return False
+
+
+# def is_latex_equal(given_answer: str, ground_truth: str) -> bool:
+#     # try:
+#     #     with timeout(1):
+#     try:
+#         if (len(given_answer) > 128 and repeatness(given_answer)) or (
+#             len(ground_truth) > 128 and repeatness(ground_truth)
+#         ):
+#             return False
+#         # First conduct normalized string matching.
+#         ground_truth_normalized = _normalize(ground_truth)
+#         given_normalized = _normalize(given_answer)
+#         if ground_truth_normalized is None:
+#             return False
+#         if ground_truth_normalized == given_normalized:
+#             return True
+
+#         # Next call math verify.
+#         given_answer.replace("\n", "")
+#         ground_truth.replace("\n", "")
+#         if not "$" in given_answer:
+#             given_answer = f"${given_answer}$"
+#         if not "$" in ground_truth:
+#             ground_truth = f"${ground_truth}$"
+#         return verify(
+#             parse(
+#                 ground_truth,
+#                 extraction_config=(
+#                     LatexExtractionConfig(boxed_match_priority=0),
+#                     ExprExtractionConfig(),
+#                 ),
+#                 fallback_mode="no_fallback",
+#                 extraction_mode=["first_match"],
+#                 parsing_timeout=1,
+#             ),
+#             parse(
+#                 given_answer,
+#                 extraction_config=(
+#                     LatexExtractionConfig(boxed_match_priority=0),
+#                     ExprExtractionConfig(),
+#                 ),
+#                 fallback_mode="no_fallback",
+#                 extraction_mode=["first_match"],
+#                 parsing_timeout=1,
+#             ),
+#             timeout_seconds=1,
+#         )
+#         # or symbolic_equal(ground_truth, given_answer)
+#     except Exception:
+#         return False
+#     # except TimeoutError:
+#     #     return False
 
 def is_value_equal(given_answer: str, ground_truth: str) -> bool:
     assert ground_truth is not None
