@@ -4,7 +4,6 @@ from trl import GRPOConfig
 import verifiers as vf
 from verifiers.tools import search, python, ask
 from verifiers.utils import preprocess_dataset
-from verifiers.rubrics.math_rubric import is_latex_equal
 
 """
 Multi-GPU training (single node, 4 training + 4 inference)
