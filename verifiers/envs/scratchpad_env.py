@@ -95,6 +95,9 @@ class ScratchpadEnv(Environment):
 
     def get_reward_funcs(self, **kwargs: Any) -> List[RewardFunc]:
         return self.rubric.get_reward_funcs()
+    
+    def get_reward_weights(self, **kwargs: Any) -> List[float]:
+        return self.rubric.get_reward_weights()
 
     def get_dataset(self, n: int = -1, seed: int = 0, **kwargs: Any) -> Dataset | None:
         if n > 0 and self.dataset is not None:

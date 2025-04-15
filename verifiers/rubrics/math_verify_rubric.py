@@ -7,3 +7,6 @@ class MathVerifyRubric(Rubric):
         self.reward_funcs = [
             is_latex_equal
         ]
+        self.reward_weights = [
+            1
+        ]
