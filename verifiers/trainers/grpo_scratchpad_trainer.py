@@ -5,6 +5,7 @@ from accelerate.utils import broadcast_object_list, gather, gather_object
 from datasets import Dataset, IterableDataset
 from peft import PeftConfig # type: ignore
 import torch
+import numpy as np
 from torch import nn
 from transformers import (
     PreTrainedModel,
@@ -158,7 +159,8 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
         lst_completion_ids = []
         lst_completion_mask = []
 
-        num_tries = len(total_completion_ids[0])
+        total_completion_ids = np.array(total_completion_ids)
+        num_tries = total_completion_ids.shape[1]
         for i in range(num_tries):
             completion_ids = total_completion_ids[:, i]
             completion_messages = total_completion_messages[:, i]
