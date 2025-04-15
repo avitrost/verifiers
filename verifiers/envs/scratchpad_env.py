@@ -206,13 +206,13 @@ class ScratchpadEnv(Environment):
             # new_completion_len = len(llm_response.outputs[0].token_ids)
 
             # update completion ids
-            state["completion_ids"].append(list(llm_response.prompt_token_ids)) # type: ignore
-            state["completion_ids"].extend(list(llm_response.outputs[0].token_ids))
-            state["completion_ids"] = state["completion_ids"][len(state["prompt_ids"]):]
+            new_completion_ids = list(llm_response.prompt_token_ids) # type: ignore
+            new_completion_ids.extend(list(llm_response.outputs[0].token_ids))
+            new_completion_ids = new_completion_ids[len(state["prompt_ids"][-1]):]
 
-            if state["completion_ids"][-1] != 198 and state["completion_ids"][-2] != self.message_end_id:
-                state["completion_ids"].append(self.message_end_id)
-                state["completion_ids"].append(198)
+            if new_completion_ids[-1] != 198 and new_completion_ids[-2] != self.message_end_id:
+                new_completion_ids.append(self.message_end_id)
+                new_completion_ids.append(198)
                 # state["completion_mask"][-1].append(1)
                 # state["completion_mask"][-1].append(1)
 
@@ -238,13 +238,7 @@ class ScratchpadEnv(Environment):
             #     state["completion_mask"] = state["completion_mask"][:min_len]
             #     state["completion_ids"] = state["completion_ids"][:min_len]
 
-            print('-------------------------')
-            print('STATE')
-            print(state)
-            print('***********')
-            print('LLM RESPONSE')
-            print(llm_response)
-            print('***********')
+            state["completion_ids"].append(new_completion_ids)
             state["completion_mask"].append([1] * len(state["completion_ids"][-1]))
 
             return j, state
