@@ -160,6 +160,10 @@ class ScratchpadEnv(Environment):
         print('CONTEXT')
         print(context)
         print('************')
+        print('&&&&&&&&&&&&&')
+        print('ORIGINAL PROMPT')
+        print(original_prompt)
+        print('&&&&&&&&&&&&&')
         print('-------------------------')
         new_prompt = "<previous_attempts>\n" + context + "\n<\previous_attempts>\n" + original_prompt
         return new_prompt
