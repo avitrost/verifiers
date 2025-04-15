@@ -159,7 +159,11 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
         lst_completion_ids = []
         lst_completion_mask = []
 
-        total_completion_ids = np.array(total_completion_ids)
+        print('-----------------------')
+        print(f"total_completion_ids: {total_completion_ids}")
+        print(f"total_completion_messages: {total_completion_messages}")
+        print(f"total_completion_mask: {total_completion_mask}")
+        print('-----------------------')
         num_tries = total_completion_ids.shape[1]
         for i in range(num_tries):
             completion_ids = total_completion_ids[:, i]
