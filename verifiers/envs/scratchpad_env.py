@@ -153,18 +153,6 @@ class ScratchpadEnv(Environment):
     
     def create_new_prompt(self, messages: List[Dict[str, str]], original_prompt: str) -> str:  # TODO: add try number? 
         context = self.extract_context(messages)
-        print('-------------------------')
-        print('MESSAGES')
-        print(messages)
-        print('************')
-        print('CONTEXT')
-        print(context)
-        print('************')
-        print('&&&&&&&&&&&&&')
-        print('ORIGINAL PROMPT')
-        print(original_prompt)
-        print('&&&&&&&&&&&&&')
-        print('-------------------------')
         new_prompt = "<previous_attempts>\n" + context + "\n<\previous_attempts>\n" + original_prompt
         return new_prompt
 
@@ -250,6 +238,13 @@ class ScratchpadEnv(Environment):
             #     state["completion_mask"] = state["completion_mask"][:min_len]
             #     state["completion_ids"] = state["completion_ids"][:min_len]
 
+            print('-------------------------')
+            print('STATE')
+            print(state)
+            print('***********')
+            print('LLM RESPONSE')
+            print(llm_response)
+            print('***********')
             state["completion_mask"].append([1] * len(state["completion_ids"][-1]))
 
             return j, state
