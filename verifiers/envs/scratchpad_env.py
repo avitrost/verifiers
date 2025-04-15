@@ -291,7 +291,7 @@ class ScratchpadEnv(Environment):
             "completion_ids": [],
             "completion_mask": [],
             "answer": answer,
-            "original_prompt": m,  # TODO: get the actual prompt from this
+            "original_prompt": deepcopy(m[0]["content"]),  # Store copy of prompt content
         } for m, answer in zip(prompts, answers)]
 
         # main loop
