@@ -158,7 +158,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
         lst_completion_ids = []
         lst_completion_mask = []
 
-        num_tries = total_completion_ids.shape[1]
+        num_tries = len(total_completion_ids[0])
         for i in range(num_tries):
             completion_ids = total_completion_ids[:, i]
             completion_messages = total_completion_messages[:, i]
