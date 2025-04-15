@@ -114,11 +114,11 @@ class ScratchpadEnv(Environment):
         Count the number of responses in the messages.
         """
         count = 0
-        print('-------------------------')
-        print(messages)
-        print('-------------------------')
+        # print('-------------------------')
+        # print(messages)
+        # print('-------------------------')
         for message in messages:
-            if message["role"] == "assistant":
+            if message[-1]["role"] == "assistant":
                 count += 1
         return count
     
