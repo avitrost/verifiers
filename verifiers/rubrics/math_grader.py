@@ -598,57 +598,57 @@ def _is_latex_equal(str1, str2):
     return False
 
 
-def is_latex_equal(given_answer: str, ground_truth: str) -> bool:
-    try:
-        with timeout(1):
-            try:
-                if (len(given_answer) > 128 and repeatness(given_answer)) or (
-                    len(ground_truth) > 128 and repeatness(ground_truth)
-                ):
-                    return False
-                # First conduct normalized string matching.
-                ground_truth_normalized = _normalize(ground_truth)
-                given_normalized = _normalize(given_answer)
-                if ground_truth_normalized is None:
-                    return False
-                if ground_truth_normalized == given_normalized:
-                    return True
+# def is_latex_equal(given_answer: str, ground_truth: str) -> bool:
+#     try:
+#         with timeout(1):
+#             try:
+#                 if (len(given_answer) > 128 and repeatness(given_answer)) or (
+#                     len(ground_truth) > 128 and repeatness(ground_truth)
+#                 ):
+#                     return False
+#                 # First conduct normalized string matching.
+#                 ground_truth_normalized = _normalize(ground_truth)
+#                 given_normalized = _normalize(given_answer)
+#                 if ground_truth_normalized is None:
+#                     return False
+#                 if ground_truth_normalized == given_normalized:
+#                     return True
 
-                # Next call math verify.
-                given_answer.replace("\n", "")
-                ground_truth.replace("\n", "")
-                if not "$" in given_answer:
-                    given_answer = f"${given_answer}$"
-                if not "$" in ground_truth:
-                    ground_truth = f"${ground_truth}$"
-                return verify(
-                    parse(
-                        ground_truth,
-                        extraction_config=(
-                            LatexExtractionConfig(boxed_match_priority=0),
-                            ExprExtractionConfig(),
-                        ),
-                        fallback_mode="no_fallback",
-                        extraction_mode=["first_match"],
-                        parsing_timeout=0, # TODO: check timeout
-                    ),
-                    parse(
-                        given_answer,
-                        extraction_config=(
-                            LatexExtractionConfig(boxed_match_priority=0),
-                            ExprExtractionConfig(),
-                        ),
-                        fallback_mode="no_fallback",
-                        extraction_mode=["first_match"],
-                        parsing_timeout=0, # TODO: check timeout
-                    ),
-                    timeout_seconds=0, # TODO: check timeout
-                )
-                # or symbolic_equal(ground_truth, given_answer)
-            except Exception:
-                return False
-    except TimeoutError:
-        return False
+#                 # Next call math verify.
+#                 given_answer.replace("\n", "")
+#                 ground_truth.replace("\n", "")
+#                 if not "$" in given_answer:
+#                     given_answer = f"${given_answer}$"
+#                 if not "$" in ground_truth:
+#                     ground_truth = f"${ground_truth}$"
+#                 return verify(
+#                     parse(
+#                         ground_truth,
+#                         extraction_config=(
+#                             LatexExtractionConfig(boxed_match_priority=0),
+#                             ExprExtractionConfig(),
+#                         ),
+#                         fallback_mode="no_fallback",
+#                         extraction_mode=["first_match"],
+#                         parsing_timeout=0, # TODO: check timeout
+#                     ),
+#                     parse(
+#                         given_answer,
+#                         extraction_config=(
+#                             LatexExtractionConfig(boxed_match_priority=0),
+#                             ExprExtractionConfig(),
+#                         ),
+#                         fallback_mode="no_fallback",
+#                         extraction_mode=["first_match"],
+#                         parsing_timeout=0, # TODO: check timeout
+#                     ),
+#                     timeout_seconds=0, # TODO: check timeout
+#                 )
+#                 # or symbolic_equal(ground_truth, given_answer)
+#             except Exception:
+#                 return False
+#     except TimeoutError:
+#         return False
 
 
 def is_latex_equal(given_answer: str, ground_truth: str) -> bool:
