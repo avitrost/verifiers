@@ -250,11 +250,18 @@ class ScratchpadEnv(Environment):
 
             return j, state
 
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            results = list(executor.map(
-                lambda args: update_state(*args),
-                [(j, llm_responses[i]) for i, j in enumerate(live_indices)]
-            ))
+        # Original threaded version
+        # with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+        #     results = list(executor.map(
+        #         lambda args: update_state(*args),
+        #         [(j, llm_responses[i]) for i, j in enumerate(live_indices)]
+        #     ))
+        
+        # Non-threaded version
+        results = []
+        for i, j in enumerate(live_indices):
+            result = update_state(j, llm_responses[i])
+            results.append(result)
 
         for j, state in results:
             states[j] = state

@@ -492,43 +492,43 @@ def repeatness(s: str):
     return (cnt * 2 / (n * (n + 1))) > 0.2
 
 
-# class timeout:
-#     def __init__(self, seconds=1, error_message="Timeout"):
-#         self.seconds = seconds
-#         self.error_message = error_message
-
-#     def handle_timeout(self, signum, frame):
-#         raise TimeoutError(self.error_message)
-
-#     def __enter__(self):
-#         signal.signal(signal.SIGALRM, self.handle_timeout)
-#         signal.alarm(self.seconds)
-
-#     def __exit__(self, type, value, traceback):
-#         signal.alarm(0)
-
 class timeout:
     def __init__(self, seconds=1, error_message="Timeout"):
         self.seconds = seconds
         self.error_message = error_message
-        self._timer = None
-        self._timeout_occurred = False
 
-    def _raise_timeout(self):
-        self._timeout_occurred = True
-        # This will interrupt sleep or long-blocking calls only if they are implemented to be interruptible.
-        # Otherwise, we'll raise in `__exit__`
-        # A better way is to run the block in another thread, see below for that version.
+    def handle_timeout(self, signum, frame):
+        raise TimeoutError(self.error_message)
 
     def __enter__(self):
-        self._timer = threading.Timer(self.seconds, self._raise_timeout)
-        self._timer.start()
-        return self
+        signal.signal(signal.SIGALRM, self.handle_timeout)
+        signal.alarm(self.seconds)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._timer.cancel()
-        if self._timeout_occurred:
-            raise TimeoutError(self.error_message)
+    def __exit__(self, type, value, traceback):
+        signal.alarm(0)
+
+# class timeout:
+#     def __init__(self, seconds=1, error_message="Timeout"):
+#         self.seconds = seconds
+#         self.error_message = error_message
+#         self._timer = None
+#         self._timeout_occurred = False
+
+#     def _raise_timeout(self):
+#         self._timeout_occurred = True
+#         # This will interrupt sleep or long-blocking calls only if they are implemented to be interruptible.
+#         # Otherwise, we'll raise in `__exit__`
+#         # A better way is to run the block in another thread, see below for that version.
+
+#     def __enter__(self):
+#         self._timer = threading.Timer(self.seconds, self._raise_timeout)
+#         self._timer.start()
+#         return self
+
+#     def __exit__(self, exc_type, exc_val, exc_tb):
+#         self._timer.cancel()
+#         if self._timeout_occurred:
+#             raise TimeoutError(self.error_message)
 
 
 def latex_eval(latex):
