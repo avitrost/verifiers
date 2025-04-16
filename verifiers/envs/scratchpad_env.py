@@ -153,7 +153,7 @@ class ScratchpadEnv(Environment):
     
     def create_new_prompt(self, messages: List[Dict[str, str]], original_prompt: str) -> str:  # TODO: add try number? 
         context = self.extract_context(messages)
-        new_prompt = "<previous_attempts>\n" + context + "\n<\previous_attempts>\n" + original_prompt
+        new_prompt = "<previous_attempts>\n" + context + "\n</previous_attempts>\n" + original_prompt
         return new_prompt
 
     def env_response(self, messages: List[Dict[str, str]], original_prompt: str, **kwargs: Any) -> Dict[str, str]:

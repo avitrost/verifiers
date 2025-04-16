@@ -164,11 +164,10 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
         print(f"total_completion_messages: {total_completion_messages}")
         print(f"total_completion_mask: {total_completion_mask}")
         print('-----------------------')
-        num_tries = total_completion_ids.shape[1]
-        for i in range(num_tries):
-            completion_ids = total_completion_ids[:, i]
-            completion_messages = total_completion_messages[:, i]
-            completion_mask = total_completion_mask[:, i]
+        for i in range(self.env.num_tries):
+            completion_ids = [x[i] for x in total_completion_ids]
+            completion_messages = [x[i] for x in total_completion_messages]
+            completion_mask = [x[i] for x in total_completion_mask]
             
             completion_ids = [torch.tensor(ids, device=device) for ids in completion_ids]
             completion_ids = pad(completion_ids, padding_value=self.processing_class.pad_token_id) # type: ignore
