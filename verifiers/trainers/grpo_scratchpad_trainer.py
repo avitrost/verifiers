@@ -164,7 +164,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
         print(f"total_completion_messages: {total_completion_messages}")
         print(f"total_completion_mask: {total_completion_mask}")
         print('-----------------------')
-        for i in range(self.env.num_tries):
+        for i in range(self.env.max_tries):
             completion_ids = [x[i] for x in total_completion_ids]
             completion_messages = [x[i] for x in total_completion_messages]
             completion_mask = [x[i] for x in total_completion_mask]
