@@ -171,6 +171,9 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             print('BBBBB:' + str(len(total_completion_ids[0])))
             for x in total_completion_ids:
                 print(f"len(x): {len(x)}")
+                print(x)
+                a = x[i]
+                print('next' + str(len(a)))
             completion_ids = [x[i] for x in total_completion_ids]
             completion_messages = [x[i] for x in total_completion_messages]
             completion_mask = [x[i] for x in total_completion_mask]
