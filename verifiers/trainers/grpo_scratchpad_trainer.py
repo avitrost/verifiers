@@ -189,9 +189,20 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     completion_ids.append(x[i])
                 except Exception as e:
                     print(f"Error at index {idx}: {e}, x = {x}, len(x) = {len(x) if hasattr(x, '__len__') else 'N/A'}")
-
-            completion_messages = [x[i] for x in total_completion_messages]
-            completion_mask = [x[i] for x in total_completion_mask]
+            completion_messages = []
+            for idx, x in enumerate(total_completion_messages):
+                try:
+                    completion_messages.append(x[i])
+                except Exception as e:
+                    print(f"Error at index {idx}: {e}, x = {x}, len(x) = {len(x) if hasattr(x, '__len__') else 'N/A'}")
+            completion_mask = []
+            for idx, x in enumerate(total_completion_mask):
+                try:
+                    completion_mask.append(x[i])
+                except Exception as e:
+                    print(f"Error at index {idx}: {e}, x = {x}, len(x) = {len(x) if hasattr(x, '__len__') else 'N/A'}")
+            # completion_messages = [x[i] for x in total_completion_messages]
+            # completion_mask = [x[i] for x in total_completion_mask]
             
             completion_ids = [torch.tensor(ids, device=device) for ids in completion_ids]
             completion_ids = pad(completion_ids, padding_value=self.processing_class.pad_token_id) # type: ignore
