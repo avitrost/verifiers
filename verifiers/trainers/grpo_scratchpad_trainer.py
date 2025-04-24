@@ -176,6 +176,12 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     completion_ids.append(x[i])
             completion_messages = []
             for idx, x in enumerate(total_completion_messages):
+                print('-----------------------')
+                print(f"total_completion_messages: {total_completion_messages}")
+                print(f"x: {x}")
+                print(f"i: {i}")
+                print(f"num_tries: {num_tries}")
+                print(f"idx: {idx}")
                 if i >= num_tries[idx]:
                     completion_messages.append([])
                 else:
