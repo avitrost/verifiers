@@ -172,8 +172,16 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             for x in total_completion_ids:
                 print(f"len(x): {len(x)}")
                 print(x)
+                if len(x) <= i:
+                    print(f"Skipping x with insufficient length: len(x)={len(x)}, i={i}")
+                    raise ValueError(f"Skipping x with insufficient length: len(x)={len(x)}, i={i}")
+
                 a = x[i]
                 print('next' + str(len(a)))
+            for x in total_completion_ids:
+                print(f"len(x): {len(x)}, i: {i}")
+                _ = x[i]  # this will break right where it would in line 177
+
             completion_ids = [x[i] for x in total_completion_ids]
             completion_messages = [x[i] for x in total_completion_messages]
             completion_mask = [x[i] for x in total_completion_mask]
