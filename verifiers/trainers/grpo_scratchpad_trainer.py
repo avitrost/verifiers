@@ -171,27 +171,21 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             completion_ids = []
             for idx, x in enumerate(total_completion_ids):
                 if i >= num_tries[idx]:
-                    break
-                try:
+                    completion_ids.append([])
+                else:
                     completion_ids.append(x[i])
-                except Exception as e:
-                    print(f"Error at index {idx}: {e}, x = {x}, len(x) = {len(x) if hasattr(x, '__len__') else 'N/A'}")
             completion_messages = []
             for idx, x in enumerate(total_completion_messages):
                 if i >= num_tries[idx]:
-                    break
-                try:
+                    completion_messages.append([])
+                else:
                     completion_messages.append(x[i])
-                except Exception as e:
-                    print(f"Error at index {idx}: {e}, x = {x}, len(x) = {len(x) if hasattr(x, '__len__') else 'N/A'}")
             completion_mask = []
             for idx, x in enumerate(total_completion_mask):
                 if i >= num_tries[idx]:
-                    break
-                try:
+                    completion_mask.append([])
+                else:
                     completion_mask.append(x[i])
-                except Exception as e:
-                    print(f"Error at index {idx}: {e}, x = {x}, len(x) = {len(x) if hasattr(x, '__len__') else 'N/A'}")
             # completion_messages = [x[i] for x in total_completion_messages]
             # completion_mask = [x[i] for x in total_completion_mask]
             
