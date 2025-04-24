@@ -56,7 +56,7 @@ class ScratchpadEnv(Environment):
                  max_workers: int = 1,
                  max_steps: int = 10,
                  sleep_time: float = 1.0,
-                 max_tries: int = 5,
+                 max_tries: int = 3,
                  **kwargs):
         super().__init__(**kwargs)
         self.system_prompt = system_prompt
