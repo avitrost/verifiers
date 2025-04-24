@@ -133,6 +133,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             completion_ids = env_result['ids']
             completion_messages = env_result['messages']
             completion_mask = env_result['mask']
+            num_tries = env_result['num_tries']
 
         else:
             completion_ids = [None] * len(all_prompts)
@@ -165,38 +166,28 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
         print(f"total_completion_mask: {total_completion_mask}")
         print('-----------------------')
         for i in range(self.env.max_tries):
-            print('-----------------------')
-            print(f"i: {i}")
-            print('AAAAA:' + str(len(total_completion_ids)))
-            print('BBBBB:' + str(len(total_completion_ids[0])))
-            for x in total_completion_ids:
-                print(f"len(x): {len(x)}")
-                print(x)
-                if len(x) <= i:
-                    print(f"Skipping x with insufficient length: len(x)={len(x)}, i={i}")
-                    raise ValueError(f"Skipping x with insufficient length: len(x)={len(x)}, i={i}")
-
-                a = x[i]
-                print('next' + str(len(a)))
-            for x in total_completion_ids:
-                print(f"len(x): {len(x)}, i: {i}")
-                _ = x[i]  # this will break right where it would in line 177
 
             # completion_ids = [x[i] for x in total_completion_ids]
             completion_ids = []
             for idx, x in enumerate(total_completion_ids):
+                if i >= num_tries[idx]:
+                    break
                 try:
                     completion_ids.append(x[i])
                 except Exception as e:
                     print(f"Error at index {idx}: {e}, x = {x}, len(x) = {len(x) if hasattr(x, '__len__') else 'N/A'}")
             completion_messages = []
             for idx, x in enumerate(total_completion_messages):
+                if i >= num_tries[idx]:
+                    break
                 try:
                     completion_messages.append(x[i])
                 except Exception as e:
                     print(f"Error at index {idx}: {e}, x = {x}, len(x) = {len(x) if hasattr(x, '__len__') else 'N/A'}")
             completion_mask = []
             for idx, x in enumerate(total_completion_mask):
+                if i >= num_tries[idx]:
+                    break
                 try:
                     completion_mask.append(x[i])
                 except Exception as e:

@@ -168,6 +168,9 @@ class ScratchpadEnv(Environment):
         
         live_indices = [i for i, s in enumerate(states) if not s["completed"]]
 
+        for i in live_indices:
+            states[i]["num_tries"] += 1
+
         # get the most recent prompt only
         messages_to_step = [states[i]["messages"][-1] for i in live_indices]
 
@@ -280,6 +283,7 @@ class ScratchpadEnv(Environment):
             "completion_ids": [],
             "completion_mask": [],
             "answer": answer,
+            "num_tries": 0,
             "original_prompt": deepcopy(m[0]["content"]),  # Store copy of prompt content
         } for m, answer in zip(prompts, answers)]
 
@@ -291,10 +295,12 @@ class ScratchpadEnv(Environment):
         completion_messages = [s["messages"][s["prompt_messages"]:] for s in states]
         completion_ids = [s["completion_ids"] for s in states]
         completion_mask = [s["completion_mask"] for s in states]
+        total_num_tries = [s["num_tries"] for s in states]
         output = {
             "ids": completion_ids,  # list of lists of ids
             "messages": completion_messages, # list of lists of [p, c] ??????
-            "mask": completion_mask # list of lists of 
+            "mask": completion_mask, # list of lists of 
+            "num_tries": total_num_tries,
         }
         return output
 
