@@ -182,7 +182,14 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                 print(f"len(x): {len(x)}, i: {i}")
                 _ = x[i]  # this will break right where it would in line 177
 
-            completion_ids = [x[i] for x in total_completion_ids]
+            # completion_ids = [x[i] for x in total_completion_ids]
+            completion_ids = []
+            for idx, x in enumerate(total_completion_ids):
+                try:
+                    completion_ids.append(x[i])
+                except Exception as e:
+                    print(f"Error at index {idx}: {e}, x = {x}, len(x) = {len(x) if hasattr(x, '__len__') else 'N/A'}")
+
             completion_messages = [x[i] for x in total_completion_messages]
             completion_mask = [x[i] for x in total_completion_mask]
             
