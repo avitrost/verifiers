@@ -292,9 +292,7 @@ class ScratchpadEnv(Environment):
             states = self.step(states, llm, custom_sp)
             all_completed = all(state["completed"] for state in states)
 
-        print(states[0]["messages"])
-        input('abc')
-        completion_messages = [s["messages"][-1]["content"] for s in states]
+        completion_messages = [[message[-1]["content"] for message in s["messages"]] for s in states]
         completion_ids = [s["completion_ids"] for s in states]
         completion_mask = [s["completion_mask"] for s in states]
         total_num_tries = [s["num_tries"] for s in states]
