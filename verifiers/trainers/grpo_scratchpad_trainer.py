@@ -212,6 +212,12 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                 # When using num_iterations == 1, old_per_token_logps == per_token_logps, so we can skip it's
                 # computation here, and use per_token_logps.detach() instead.
                 if self.num_iterations > 1:
+                    print('-----------------------')
+                    print(f"prompt_completion_ids: {prompt_completion_ids}")
+                    print(f"attention_mask: {attention_mask}")
+                    print(f"logits_to_keep: {logits_to_keep}")
+                    print(f"self.model: {self.model}")
+                    print("---------------------------")
                     old_per_token_logps = self._get_per_token_logps(
                         self.model, prompt_completion_ids, attention_mask, logits_to_keep
                     )
