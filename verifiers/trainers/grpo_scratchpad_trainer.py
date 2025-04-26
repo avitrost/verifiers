@@ -212,7 +212,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             print(len(completion_ids))
             print(len(completion_ids[0]))
             print(completion_ids[0].size())
-            input('abc')
+            print('&&&&&&&&&&&&&&&&&&&&&')
             logits_to_keep = completion_ids.size(1)
 
             # TODO: split up and concatenate the per token logps, result will be same dims as original(?). everything else same after?
