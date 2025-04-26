@@ -122,7 +122,7 @@ class ScratchpadEnv(Environment):
     
     def is_completed(self, messages: List[Dict[str, str]], answer: str, **kwargs: Any) -> bool:
         response = [messages[-1][-1]["content"]]
-        response = ['$36000$']
+        response = ['36000']
         is_correct = self.verifier_func(response, answer)[0] == 1.0
         print('*************')
         print('response', response)
