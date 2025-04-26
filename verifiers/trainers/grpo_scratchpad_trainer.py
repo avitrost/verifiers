@@ -144,11 +144,6 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
         completion_messages = broadcast_object_list(completion_messages, from_process=0)
         completion_mask = broadcast_object_list(completion_mask, from_process=0)
 
-        print('-----------------------')
-        print('completion_ids: ', completion_ids)
-        print('completion_messages: ', completion_messages)
-        print('completion_mask: ', completion_mask)
-        input('abcdef')
 
         process_slice = slice(
             self.accelerator.process_index * len(prompts),
@@ -171,6 +166,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
         print(f"total_completion_messages: {total_completion_messages}")
         print(f"total_completion_mask: {total_completion_mask}")
         print('-----------------------')
+        input()
         for i in range(self.env.max_tries):
             # input('i = ' + str(i))
 
