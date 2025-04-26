@@ -126,8 +126,10 @@ class ScratchpadEnv(Environment):
         print('*************')
         print('messages', messages)
         print('count', self.count_responses(messages))
-        input()
         is_final = self.count_responses(messages) >= self.max_tries
+        print('is_final', is_final)
+        print('is_correct', is_correct)
+        input('abc')
         completed = is_correct or is_final
         return completed
 
