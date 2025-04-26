@@ -166,7 +166,6 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
         print(f"total_completion_messages: {total_completion_messages}")
         print(f"total_completion_mask: {total_completion_mask}")
         print('-----------------------')
-        input()
         for i in range(self.env.max_tries):
             # input('i = ' + str(i))
 
@@ -174,6 +173,16 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             completion_ids = []
             for idx, x in enumerate(total_completion_ids):
                 if i >= num_tries[idx]:
+                    print('-----------------------')
+                    print(f"total_completion_ids: {total_completion_ids}")
+                    print(f"total_completion_messages: {total_completion_messages}")
+                    print(f"total_completion_mask: {total_completion_mask}")
+                    print(f"x: {x}")
+                    print(f"i: {i}")
+                    print(f"num_tries: {num_tries}")
+                    print(f"idx: {idx}")
+                    print('-----------------------')
+                    input()
                     completion_ids.append([])
                 else:
                     completion_ids.append(x[i])
