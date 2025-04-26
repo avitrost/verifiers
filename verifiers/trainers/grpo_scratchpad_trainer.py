@@ -218,7 +218,6 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             print("prompt_ids: ", prompt_ids)
             print(f"completion_ids size: {completion_ids.size()}")
             print("prompt_ids size: ", prompt_ids.size())
-            input()
             prompt_completion_ids = torch.cat([prompt_ids, completion_ids], dim=1)
             attention_mask = torch.cat([prompt_mask, completion_mask], dim=1) # (B, P+C)
         
