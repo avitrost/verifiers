@@ -241,11 +241,6 @@ class ScratchpadEnv(Environment):
 
             state["completion_ids"].append(new_completion_ids)
             state["completion_mask"].append([1] * len(state["completion_ids"][-1]))
-            print('-------------------------')
-            print("completion_ids", state["completion_ids"])
-            print("completion_mask", state["completion_mask"])
-            print('-------------------------')
-            input()
 
 
             return j, state
@@ -296,6 +291,10 @@ class ScratchpadEnv(Environment):
             states = self.step(states, llm, custom_sp)
             all_completed = all(state["completed"] for state in states)
 
+        print('-------------------------')
+        print("states", states)
+        print('-------------------------')
+        input()
         completion_messages = [[message[-1]["content"] for message in s["messages"]] for s in states]
         completion_ids = [s["completion_ids"] for s in states]
         completion_mask = [s["completion_mask"] for s in states]
