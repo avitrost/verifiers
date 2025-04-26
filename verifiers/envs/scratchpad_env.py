@@ -156,7 +156,7 @@ class ScratchpadEnv(Environment):
 
     def env_response(self, messages: List[Dict[str, str]], original_prompt: str, **kwargs: Any) -> Dict[str, str]:
         content = self.create_new_prompt(messages, original_prompt)
-        new_prompt = [{"role": "user", "content": content}]
+        new_prompt = [{"role": "system", "content": self.system_prompt}, {"role": "user", "content": content}]
         return new_prompt
 
     def step(self,
@@ -283,7 +283,8 @@ class ScratchpadEnv(Environment):
             "completion_mask": [],
             "answer": answer,
             "num_tries": 0,
-            "original_prompt": deepcopy(m[0]["content"]),  # Store copy of prompt content
+            "system_prompt": self.system_prompt,
+            "original_prompt": deepcopy(m[1]["content"]),  # Store copy of prompt content
         } for m, answer in zip(prompts, answers)]
 
         # main loop
