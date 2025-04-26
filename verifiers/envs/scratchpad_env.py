@@ -292,7 +292,7 @@ class ScratchpadEnv(Environment):
             all_completed = all(state["completed"] for state in states)
 
         print('-------------------------')
-        print("states", states)
+        print("state", states[0])
         print('-------------------------')
         input()
         completion_messages = [[message[-1]["content"] for message in s["messages"]] for s in states]
