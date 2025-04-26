@@ -207,6 +207,8 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             # TODO: check this
             print('-----------------------')
             print("completion_ids: ", completion_ids)
+            print("completion_ids size: ", completion_ids.size())
+            print("completion_ids size 1: ", completion_ids.size(1))
             print(len(completion_ids))
             print(len(completion_ids[0]))
             print(completion_ids[0].size())
