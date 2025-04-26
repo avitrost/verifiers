@@ -122,7 +122,8 @@ class ScratchpadEnv(Environment):
     
     def is_completed(self, messages: List[Dict[str, str]], answer: str, **kwargs: Any) -> bool:
         response = [messages[-1][-1]["content"]]
-        is_correct = self.verifier_func(response, answer)
+        response = ['tes tes test answer is $123 \\boxed{3600} that is the answer$ qwe']
+        is_correct = self.verifier_func(response, answer)[0] == 1.0
         print('*************')
         print('response', response)
         print('answer', answer)
