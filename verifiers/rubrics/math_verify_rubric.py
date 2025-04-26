@@ -28,6 +28,8 @@ from math_verify.parser import LatexExtractionConfig, ExprExtractionConfig
 
 
 def compute_score(model_output: str, ground_truth: str) -> bool:
+    print('a: ', model_output)
+    print('b: ', ground_truth)
     verify_func = math_metric(
         gold_extraction_target=(LatexExtractionConfig(),),
         pred_extraction_target=(ExprExtractionConfig(), LatexExtractionConfig()),
@@ -36,6 +38,7 @@ def compute_score(model_output: str, ground_truth: str) -> bool:
 
     # Wrap the ground truth in \boxed{} format for verification
     ground_truth_boxed = "\\boxed{" + ground_truth + "}"
+    print('ground_truth_boxed: ', ground_truth_boxed)
     try:
         ret_score, _ = verify_func([ground_truth_boxed], [model_output])
     except Exception as e:
