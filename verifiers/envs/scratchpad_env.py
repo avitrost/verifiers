@@ -123,6 +123,10 @@ class ScratchpadEnv(Environment):
     def is_completed(self, messages: List[Dict[str, str]], answer: str, **kwargs: Any) -> bool:
         response = messages[-1][-1]["content"]
         is_correct = self.verifier_func(response, answer)
+        print('*************')
+        print('messages', messages)
+        print('count', self.count_responses(messages))
+        input()
         is_final = self.count_responses(messages) >= self.max_tries
         completed = is_correct or is_final
         return completed
