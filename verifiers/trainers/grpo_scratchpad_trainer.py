@@ -212,6 +212,10 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             print(len(completion_ids))
             print(len(completion_ids[0]))
             print(completion_ids[0].size())
+            if completion_ids.size(1) == 0:
+                print('***********')
+                print('prompts: ', prompts)
+                print('i: ', i)
             print('&&&&&&&&&&&&&&&&&&&&&')
             logits_to_keep = completion_ids.size(1)
 
