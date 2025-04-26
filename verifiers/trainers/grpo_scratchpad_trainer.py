@@ -171,6 +171,13 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
 
             # completion_ids = [x[i] for x in total_completion_ids]
             completion_ids = []
+            if len(total_completion_ids) == 0:
+                print('***********')
+                print('prompts: ', prompts)
+                print('i: ', i)
+                print('env_result: ', env_result)
+                print('))))))))))))))))))')
+                input()
             for idx, x in enumerate(total_completion_ids):
                 if i >= num_tries[idx]:
                     print('-----------------------')
