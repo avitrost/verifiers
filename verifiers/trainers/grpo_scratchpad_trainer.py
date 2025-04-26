@@ -205,6 +205,12 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             attention_mask = torch.cat([prompt_mask, completion_mask], dim=1) # (B, P+C)
         
             # TODO: check this
+            print('-----------------------')
+            print("completion_ids: ", completion_ids)
+            print(len(completion_ids))
+            print(len(completion_ids[0]))
+            print(completion_ids[0].size())
+            input('abc')
             logits_to_keep = completion_ids.size(1)
 
             # TODO: split up and concatenate the per token logps, result will be same dims as original(?). everything else same after?
