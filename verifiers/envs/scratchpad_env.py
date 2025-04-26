@@ -241,6 +241,12 @@ class ScratchpadEnv(Environment):
 
             state["completion_ids"].append(new_completion_ids)
             state["completion_mask"].append([1] * len(state["completion_ids"][-1]))
+            print('-------------------------')
+            print("completion_ids", state["completion_ids"])
+            print("completion_mask", state["completion_mask"])
+            print('-------------------------')
+            input()
+
 
             return j, state
 
