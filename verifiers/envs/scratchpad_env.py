@@ -283,7 +283,6 @@ class ScratchpadEnv(Environment):
             "completion_mask": [],
             "answer": answer,
             "num_tries": 0,
-            "system_prompt": self.system_prompt,
             "original_prompt": deepcopy(m[1]["content"]),  # Store copy of prompt content
         } for m, answer in zip(prompts, answers)]
 
@@ -295,7 +294,6 @@ class ScratchpadEnv(Environment):
         print('-------------------------')
         print("state", states[0])
         print('-------------------------')
-        input()
         completion_messages = [[message[-1]["content"] for message in s["messages"]] for s in states]
         completion_ids = [s["completion_ids"] for s in states]
         completion_mask = [s["completion_mask"] for s in states]

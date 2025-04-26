@@ -134,6 +134,8 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             completion_messages = env_result['messages']
             completion_mask = env_result['mask']
             num_tries = env_result['num_tries']
+            print(env_result)
+            input('abcdef')
 
         else:
             completion_ids = [None] * len(all_prompts)
