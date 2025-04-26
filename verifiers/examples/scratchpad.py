@@ -26,7 +26,7 @@ eval_dataset = concatenate_datasets([eval_aime24, eval_aime25]).shuffle(seed=0)
 vf_env = vf.ScratchpadEnv(
     dataset=dataset,
     eval_dataset=eval_dataset,
-    max_tries=3,
+    max_tries=1,
 )
 print(vf_env.system_prompt)
 
