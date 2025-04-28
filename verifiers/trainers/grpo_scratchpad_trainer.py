@@ -218,6 +218,13 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             print(f"completion_ids: {completion_ids}")
             print("prompt_ids: ", prompt_ids)
             
+            if len(completion_ids) == 0:
+                print('*********** completion 0 ***********')
+                print('prompts: ', prompts)
+                print('i: ', i)
+                print('env_result: ', env_result)
+                print('))))))))))))))))))')
+                input()
             completion_ids = [torch.tensor(ids, device=device) for ids in completion_ids]
             completion_ids = pad(completion_ids, padding_value=self.processing_class.pad_token_id) # type: ignore
 
