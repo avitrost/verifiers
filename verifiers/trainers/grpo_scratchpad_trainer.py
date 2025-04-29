@@ -321,7 +321,6 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     new_completion_mask.append(torch.zeros_like(completion_mask[0]))
                     print('-----------------------')
                     print(new_old_per_token_logps)
-                    input()
 
             # print(new_old_per_token_logps)
             lst_old_per_token_logps.append(torch.stack(new_old_per_token_logps))
