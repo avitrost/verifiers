@@ -199,7 +199,6 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     continue
                 else:
                     completion_ids.append(x[i])
-                    completions[idx] = x[i]
             completion_messages = []
             for idx, x in enumerate(total_completion_messages):
                 print('-----------------------')
@@ -213,6 +212,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     continue
                 else:
                     completion_messages.append(x[i])
+                    completions[idx] = x[i]
             completion_mask = []
             for idx, x in enumerate(total_completion_mask):
                 if i >= num_tries[idx]:
