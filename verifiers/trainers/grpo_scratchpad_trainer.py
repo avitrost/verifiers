@@ -323,13 +323,11 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     print(new_old_per_token_logps)
                     input()
 
-            print(new_old_per_token_logps)
-            print(torch.tensor(new_old_per_token_logps))
-            input()
-            lst_old_per_token_logps.append(new_old_per_token_logps)
-            lst_ref_per_token_logps.append(new_ref_per_token_logps)
-            lst_completion_ids.append(new_completion_ids)
-            lst_completion_mask.append(new_completion_mask)
+            # print(new_old_per_token_logps)
+            lst_old_per_token_logps.append(torch.stack(new_old_per_token_logps))
+            lst_ref_per_token_logps.append(torch.stack(new_ref_per_token_logps))
+            lst_completion_ids.append(torch.stack(new_completion_ids))
+            lst_completion_mask.append(torch.stack(new_completion_mask))
         
         # use message dicts for reward function inputs
         # completions = completion_messages  # this is the final iterate so this is correct to put outside loop (assuming the num tries is constant for all)
