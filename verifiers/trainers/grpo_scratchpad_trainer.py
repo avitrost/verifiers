@@ -167,6 +167,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
         print(f"total_completion_mask: {total_completion_mask}")
         print('-----------------------')
         for i in range(self.env.max_tries):
+            tries_mask = np.ones_like(len(prompt_ids))
             # input('i = ' + str(i))
 
             # completion_ids = [x[i] for x in total_completion_ids]
@@ -189,6 +190,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     print(f"num_tries: {num_tries}")
                     print(f"idx: {idx}")
                     print('-----------------------')
+                    tries_mask[idx] = 0
                     continue
                 else:
                     completion_ids.append(x[i])
@@ -225,6 +227,10 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                 print('env_result: ', env_result)
                 print('))))))))))))))))))')
                 input()
+
+            prompt_ids = prompt_ids[tries_mask == 1]
+            prompt_mask = prompt_mask[tries_mask == 1]
+
             completion_ids = [torch.tensor(ids, device=device) for ids in completion_ids]
             completion_ids = pad(completion_ids, padding_value=self.processing_class.pad_token_id) # type: ignore
 
