@@ -315,10 +315,10 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     new_completion_mask.append(completion_mask[idx])
                     idx += 1
                 else:
-                    new_old_per_token_logps.append(torch.zeros_like(old_per_token_logps[0]).tolist())
-                    new_ref_per_token_logps.append(torch.zeros_like(ref_per_token_logps[0]).tolist())
-                    new_completion_ids.append(torch.zeros_like(completion_ids[0]).tolist())
-                    new_completion_mask.append(torch.zeros_like(completion_mask[0]).tolist())
+                    new_old_per_token_logps.append(torch.zeros_like(old_per_token_logps[0]))
+                    new_ref_per_token_logps.append(torch.zeros_like(ref_per_token_logps[0]))
+                    new_completion_ids.append(torch.zeros_like(completion_ids[0]))
+                    new_completion_mask.append(torch.zeros_like(completion_mask[0]))
                     print('-----------------------')
                     print(new_old_per_token_logps)
                     input()
