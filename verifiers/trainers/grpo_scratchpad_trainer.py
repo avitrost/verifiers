@@ -309,21 +309,21 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             idx = 0
             for m in tries_mask:
                 if m == 1:
-                    new_old_per_token_logps.append(torch.tensor(old_per_token_logps[idx]))
-                    new_ref_per_token_logps.append(torch.tensor(ref_per_token_logps[idx]))
-                    new_completion_ids.append(torch.tensor(completion_ids[idx]))
-                    new_completion_mask.append(torch.tensor(completion_mask[idx]))
+                    new_old_per_token_logps.append(old_per_token_logps[idx])
+                    new_ref_per_token_logps.append(ref_per_token_logps[idx])
+                    new_completion_ids.append(completion_ids[idx])
+                    new_completion_mask.append(completion_mask[idx])
                     idx += 1
                 else:
-                    new_old_per_token_logps.append(torch.zeros_like(torch.tensor(old_per_token_logps[0])))
-                    new_ref_per_token_logps.append(torch.zeros_like(torch.tensor(ref_per_token_logps[0])))
-                    new_completion_ids.append(torch.zeros_like(torch.tensor(completion_ids[0])))
-                    new_completion_mask.append(torch.zeros_like(torch.tensor(completion_mask[0])))
+                    new_old_per_token_logps.append(torch.zeros_like(old_per_token_logps[0]).tolist())
+                    new_ref_per_token_logps.append(torch.zeros_like(ref_per_token_logps[0]).tolist())
+                    new_completion_ids.append(torch.zeros_like(completion_ids[0]).tolist())
+                    new_completion_mask.append(torch.zeros_like(completion_mask[0]).tolist())
 
-            lst_old_per_token_logps.append(new_old_per_token_logps.tolist())
-            lst_ref_per_token_logps.append(new_ref_per_token_logps.tolist())
-            lst_completion_ids.append(new_completion_ids.tolist())
-            lst_completion_mask.append(new_completion_mask.tolist())
+            lst_old_per_token_logps.append(new_old_per_token_logps)
+            lst_ref_per_token_logps.append(new_ref_per_token_logps)
+            lst_completion_ids.append(new_completion_ids)
+            lst_completion_mask.append(new_completion_mask)
         
         # use message dicts for reward function inputs
         # completions = completion_messages  # this is the final iterate so this is correct to put outside loop (assuming the num tries is constant for all)
