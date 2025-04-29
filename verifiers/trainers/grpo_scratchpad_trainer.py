@@ -303,7 +303,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
         # use message dicts for reward function inputs
         # completions = completion_messages  # this is the final iterate so this is correct to put outside loop (assuming the num tries is constant for all)
         print(completions)
-        input()
+        # input()
 
         rewards_per_func = torch.zeros(len(prompts), len(self.reward_funcs), device=device)
         for i, reward_func in enumerate(self.reward_funcs):
