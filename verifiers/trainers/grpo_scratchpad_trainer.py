@@ -196,7 +196,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     print(f"idx: {idx}")
                     print('-----------------------')
                     tries_mask[idx] = 0
-                    completion_ids.append(torch.zeros_like(torch.tensor(x[0])))
+                    continue
                 else:
                     completion_ids.append(x[i])
             completion_messages = []
@@ -216,7 +216,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             completion_mask = []
             for idx, x in enumerate(total_completion_mask):
                 if i >= num_tries[idx]:
-                    completion_mask.append(torch.zeros_like(torch.tensor(x[0])))
+                    continue
                 else:
                     completion_mask.append(x[i])
             # completion_messages = [x[i] for x in total_completion_messages]
@@ -249,8 +249,8 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             print("inputs: ", inputs)
             print(f"completion_ids size: {completion_ids.size()}")
             print("prompt_ids size: ", prompt_ids.size())
-            prompt_completion_ids = torch.cat([prompt_ids[tries_mask == 1], completion_ids[tries_mask == 1]], dim=1)
-            attention_mask = torch.cat([prompt_mask[tries_mask == 1], completion_mask[tries_mask == 1]], dim=1) # (B, P+C)
+            prompt_completion_ids = torch.cat([prompt_ids[tries_mask == 1], completion_ids], dim=1)
+            attention_mask = torch.cat([prompt_mask[tries_mask == 1], completion_mask], dim=1) # (B, P+C)
         
             # TODO: check this
             print('-----------------------')
@@ -295,15 +295,34 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                         ref_per_token_logps = self._get_per_token_logps(
                             self.model, prompt_completion_ids, attention_mask, logits_to_keep
                         )
+            
             lst_old_per_token_logps.append(old_per_token_logps)
             lst_ref_per_token_logps.append(ref_per_token_logps)
             lst_completion_ids.append(completion_ids)
             lst_completion_mask.append(completion_mask)
+
+            new_old_per_token_logps = []
+            new_ref_per_token_logps = []
+            new_completion_ids = []
+            new_completion_mask = []
+
+            idx = 0
+            for m in tries_mask:
+                if m == 1:
+                    new_old_per_token_logps.append(torch.tensor(old_per_token_logps[idx]))
+                    new_ref_per_token_logps.append(torch.tensor(ref_per_token_logps[idx]))
+                    new_completion_ids.append(torch.tensor(completion_ids[idx]))
+                    new_completion_mask.append(torch.tensor(completion_mask[idx]))
+                    idx += 1
+                else:
+                    new_old_per_token_logps.append(torch.zeros_like(torch.tensor(old_per_token_logps[0])))
+                    new_ref_per_token_logps.append(torch.zeros_like(torch.tensor(ref_per_token_logps[0])))
+                    new_completion_ids.append(torch.zeros_like(torch.tensor(completion_ids[0])))
+                    new_completion_mask.append(torch.zeros_like(torch.tensor(completion_mask[0])))
         
         # use message dicts for reward function inputs
         # completions = completion_messages  # this is the final iterate so this is correct to put outside loop (assuming the num tries is constant for all)
-        print(completions)
-        # input()
+        # print(completions)
 
         rewards_per_func = torch.zeros(len(prompts), len(self.reward_funcs), device=device)
         for i, reward_func in enumerate(self.reward_funcs):
@@ -400,6 +419,10 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
         concatenated_ref_per_token_logps = torch.cat(lst_ref_per_token_logps, dim=-1)
         concatenated_completion_ids = torch.cat(lst_completion_ids, dim=-1)
         concatenated_completion_mask = torch.cat(lst_completion_mask, dim=-1)
+        # concatenated_old_per_token_logps = old_per_token_logps
+        # concatenated_ref_per_token_logps = ref_per_token_logps
+        # concatenated_completion_ids = completion_ids
+        # concatenated_completion_mask = lst_completion_mask
         
         return {
             "prompt_ids": prompt_ids,
