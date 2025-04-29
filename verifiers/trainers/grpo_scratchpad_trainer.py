@@ -296,10 +296,10 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                             self.model, prompt_completion_ids, attention_mask, logits_to_keep
                         )
             
-            lst_old_per_token_logps.append(old_per_token_logps)
-            lst_ref_per_token_logps.append(ref_per_token_logps)
-            lst_completion_ids.append(completion_ids)
-            lst_completion_mask.append(completion_mask)
+            # lst_old_per_token_logps.append(old_per_token_logps)
+            # lst_ref_per_token_logps.append(ref_per_token_logps)
+            # lst_completion_ids.append(completion_ids)
+            # lst_completion_mask.append(completion_mask)
 
             new_old_per_token_logps = []
             new_ref_per_token_logps = []
@@ -319,6 +319,11 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     new_ref_per_token_logps.append(torch.zeros_like(torch.tensor(ref_per_token_logps[0])))
                     new_completion_ids.append(torch.zeros_like(torch.tensor(completion_ids[0])))
                     new_completion_mask.append(torch.zeros_like(torch.tensor(completion_mask[0])))
+
+            lst_old_per_token_logps.append(new_old_per_token_logps)
+            lst_ref_per_token_logps.append(new_ref_per_token_logps)
+            lst_completion_ids.append(new_completion_ids)
+            lst_completion_mask.append(new_completion_mask)
         
         # use message dicts for reward function inputs
         # completions = completion_messages  # this is the final iterate so this is correct to put outside loop (assuming the num tries is constant for all)
