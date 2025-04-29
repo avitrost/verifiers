@@ -395,10 +395,15 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     df = pd.DataFrame(table)
                     wandb.log({"completions": wandb.Table(dataframe=df)}) # type: ignore
 
-        concatenated_old_per_token_logps = torch.cat(lst_old_per_token_logps, dim=-1) if self.num_iterations > 1 else None
-        concatenated_ref_per_token_logps = torch.cat(lst_ref_per_token_logps, dim=-1)
-        concatenated_completion_ids = torch.cat(lst_completion_ids, dim=-1)
-        concatenated_completion_mask = torch.cat(lst_completion_mask, dim=-1)
+        # TODO: actually put in
+        # concatenated_old_per_token_logps = torch.cat(lst_old_per_token_logps, dim=-1) if self.num_iterations > 1 else None
+        # concatenated_ref_per_token_logps = torch.cat(lst_ref_per_token_logps, dim=-1)
+        # concatenated_completion_ids = torch.cat(lst_completion_ids, dim=-1)
+        # concatenated_completion_mask = torch.cat(lst_completion_mask, dim=-1)
+        concatenated_old_per_token_logps = old_per_token_logps
+        concatenated_ref_per_token_logps = ref_per_token_logps
+        concatenated_completion_ids = completion_ids
+        concatenated_completion_mask = lst_completion_mask
         
         return {
             "prompt_ids": prompt_ids,
