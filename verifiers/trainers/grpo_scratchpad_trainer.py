@@ -234,6 +234,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             print('&&&&&&&&&&&&&&&&&&&&')
             print(f"completion_ids: {completion_ids}")
             print("prompt_ids: ", prompt_ids)
+            print("inputs: ", inputs)
             print(f"completion_ids size: {completion_ids.size()}")
             print("prompt_ids size: ", prompt_ids.size())
             prompt_completion_ids = torch.cat([prompt_ids, completion_ids], dim=1)
