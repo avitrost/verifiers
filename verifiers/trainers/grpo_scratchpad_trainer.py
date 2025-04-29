@@ -196,7 +196,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     print(f"idx: {idx}")
                     print('-----------------------')
                     tries_mask[idx] = 0
-                    continue
+                    completion_ids.append(torch.zeros_like(x[0]))
                 else:
                     completion_ids.append(x[i])
             completion_messages = []
@@ -216,7 +216,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             completion_mask = []
             for idx, x in enumerate(total_completion_mask):
                 if i >= num_tries[idx]:
-                    continue
+                    completion_mask.append(torch.zeros_like(x[0]))
                 else:
                     completion_mask.append(x[i])
             # completion_messages = [x[i] for x in total_completion_messages]
@@ -249,8 +249,8 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             print("inputs: ", inputs)
             print(f"completion_ids size: {completion_ids.size()}")
             print("prompt_ids size: ", prompt_ids.size())
-            prompt_completion_ids = torch.cat([prompt_ids[tries_mask == 1], completion_ids], dim=1)
-            attention_mask = torch.cat([prompt_mask[tries_mask == 1], completion_mask], dim=1) # (B, P+C)
+            prompt_completion_ids = torch.cat([prompt_ids[tries_mask == 1], completion_ids[tries_mask == 1]], dim=1)
+            attention_mask = torch.cat([prompt_mask[tries_mask == 1], completion_mask[tries_mask == 1]], dim=1) # (B, P+C)
         
             # TODO: check this
             print('-----------------------')
@@ -396,14 +396,10 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     wandb.log({"completions": wandb.Table(dataframe=df)}) # type: ignore
 
         # TODO: actually put in
-        # concatenated_old_per_token_logps = torch.cat(lst_old_per_token_logps, dim=-1) if self.num_iterations > 1 else None
-        # concatenated_ref_per_token_logps = torch.cat(lst_ref_per_token_logps, dim=-1)
-        # concatenated_completion_ids = torch.cat(lst_completion_ids, dim=-1)
-        # concatenated_completion_mask = torch.cat(lst_completion_mask, dim=-1)
-        concatenated_old_per_token_logps = old_per_token_logps
-        concatenated_ref_per_token_logps = ref_per_token_logps
-        concatenated_completion_ids = completion_ids
-        concatenated_completion_mask = lst_completion_mask
+        concatenated_old_per_token_logps = torch.cat(lst_old_per_token_logps, dim=-1) if self.num_iterations > 1 else None
+        concatenated_ref_per_token_logps = torch.cat(lst_ref_per_token_logps, dim=-1)
+        concatenated_completion_ids = torch.cat(lst_completion_ids, dim=-1)
+        concatenated_completion_mask = torch.cat(lst_completion_mask, dim=-1)
         
         return {
             "prompt_ids": prompt_ids,
