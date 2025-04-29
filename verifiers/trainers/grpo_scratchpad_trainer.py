@@ -166,6 +166,11 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
         print(f"total_completion_messages: {total_completion_messages}")
         print(f"total_completion_mask: {total_completion_mask}")
         print('-----------------------')
+        # Init completions
+        completions = []
+        for x in total_completion_messages:
+            completions.append(x[0])
+        
         for i in range(self.env.max_tries):
             tries_mask = np.ones(len(prompt_ids))
             # input('i = ' + str(i))
@@ -194,6 +199,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     continue
                 else:
                     completion_ids.append(x[i])
+                    completions[idx] = x[i]
             completion_messages = []
             for idx, x in enumerate(total_completion_messages):
                 print('-----------------------')
@@ -295,7 +301,8 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             lst_completion_mask.append(completion_mask)
         
         # use message dicts for reward function inputs
-        completions = completion_messages  # this is the final iterate so this is correct to put outside loop (assuming the num tries is constant for all)
+        # completions = completion_messages  # this is the final iterate so this is correct to put outside loop (assuming the num tries is constant for all)
+        completions = torch.tensor(completions, device=device)
 
         rewards_per_func = torch.zeros(len(prompts), len(self.reward_funcs), device=device)
         for i, reward_func in enumerate(self.reward_funcs):
