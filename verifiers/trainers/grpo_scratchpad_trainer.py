@@ -324,7 +324,6 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     input()
 
             print(new_old_per_token_logps)
-            input()
             lst_old_per_token_logps.append(torch.tensor(new_old_per_token_logps))
             lst_ref_per_token_logps.append(torch.tensor(new_ref_per_token_logps))
             lst_completion_ids.append(torch.tensor(new_completion_ids))
