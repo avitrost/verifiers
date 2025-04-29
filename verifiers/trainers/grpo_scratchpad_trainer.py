@@ -319,6 +319,9 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     new_ref_per_token_logps.append(torch.zeros_like(ref_per_token_logps[0]).tolist())
                     new_completion_ids.append(torch.zeros_like(completion_ids[0]).tolist())
                     new_completion_mask.append(torch.zeros_like(completion_mask[0]).tolist())
+                    print('-----------------------')
+                    print(new_old_per_token_logps)
+                    input()
 
             lst_old_per_token_logps.append(new_old_per_token_logps)
             lst_ref_per_token_logps.append(new_ref_per_token_logps)
