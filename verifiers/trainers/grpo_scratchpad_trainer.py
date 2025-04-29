@@ -228,10 +228,8 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                 print('))))))))))))))))))')
                 input()
 
+            print('MASK')
             print(tries_mask)
-            current_prompt_ids = prompt_ids[tries_mask == 1]
-            current_prompt_mask = prompt_mask[tries_mask == 1]
-            print()
 
             completion_ids = [torch.tensor(ids, device=device) for ids in completion_ids]
             completion_ids = pad(completion_ids, padding_value=self.processing_class.pad_token_id) # type: ignore
@@ -245,8 +243,8 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             print("inputs: ", inputs)
             print(f"completion_ids size: {completion_ids.size()}")
             print("prompt_ids size: ", prompt_ids.size())
-            prompt_completion_ids = torch.cat([current_prompt_ids, completion_ids], dim=1)
-            attention_mask = torch.cat([current_prompt_mask, completion_mask], dim=1) # (B, P+C)
+            prompt_completion_ids = torch.cat([prompt_ids[tries_mask == 1], completion_ids], dim=1)
+            attention_mask = torch.cat([prompt_mask[tries_mask == 1], completion_mask], dim=1) # (B, P+C)
         
             # TODO: check this
             print('-----------------------')
