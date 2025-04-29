@@ -196,7 +196,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
                     print(f"idx: {idx}")
                     print('-----------------------')
                     tries_mask[idx] = 0
-                    completion_ids.append(torch.zeros_like(x[0]))
+                    completion_ids.append(torch.zeros_like(torch.tensor(x[0])))
                 else:
                     completion_ids.append(x[i])
             completion_messages = []
@@ -216,7 +216,7 @@ class GRPOScratchpadEnvTrainer(GRPOTrainer):
             completion_mask = []
             for idx, x in enumerate(total_completion_mask):
                 if i >= num_tries[idx]:
-                    completion_mask.append(torch.zeros_like(x[0]))
+                    completion_mask.append(torch.zeros_like(torch.tensor(x[0])))
                 else:
                     completion_mask.append(x[i])
             # completion_messages = [x[i] for x in total_completion_messages]
