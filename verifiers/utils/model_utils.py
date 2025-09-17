@@ -90,7 +90,7 @@ def get_model(
 
 
 def get_tokenizer(model_name: str) -> Any:
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side='left')
     if not hasattr(tokenizer, "chat_template"):
         raise ValueError(
             f"Tokenizer for model {model_name} does not have chat_template attribute, \
@@ -104,5 +104,5 @@ def get_model_and_tokenizer(
     model_name: str, use_liger: bool = True, model_kwargs: dict[str, Any] | None = None
 ) -> tuple[Any, Any]:
     model = get_model(model_name, use_liger, model_kwargs)
-    tokenizer = get_tokenizer(model_name, padding_side='left')
+    tokenizer = get_tokenizer(model_name)
     return model, tokenizer
