@@ -26,7 +26,7 @@ def main(args):
 
     def _gen_model_completions(batch):
         prompts = [
-            tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)  # type: ignore
+            tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True, padding_side='left')  # type: ignore
             for msgs in batch["prompt"]
         ]
         outputs = text_gen(
