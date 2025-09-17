@@ -46,6 +46,7 @@ def main(args):
 
         def _gen_model_completions(batch):
             completions = asyncio.run(_async_generate(batch["prompt"]))
+            print(completions)
             return {
                 "model_completion": [
                     [{"role": "assistant", "content": text if isinstance(text, str) else str(text)}]
@@ -53,7 +54,7 @@ def main(args):
                 ]
             }
 
-        dataset = dataset.map(_gen_model_completions, batched=True, batch_size=64)
+        dataset = dataset.map(_gen_model_completions, batched=True, batch_size=2)
     else:
         text_gen = pipeline(
             "text-generation",
