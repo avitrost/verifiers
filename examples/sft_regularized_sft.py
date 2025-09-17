@@ -7,7 +7,7 @@ import verifiers as vf
 import torch
 import asyncio
 from transformers import pipeline
-from verifiers.utils.model_utils import VLLMClient
+from verifiers.inference.vllm_client import VLLMClient
 
 """
 accelerate launch --config-file configs/zero3.yaml --num-processes 8 examples/sft.py
