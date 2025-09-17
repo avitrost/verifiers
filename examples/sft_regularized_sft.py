@@ -22,12 +22,11 @@ def main(args):
         "text-generation",
         model=model,
         tokenizer=tokenizer,
-        padding_side='left',
     )
 
     def _gen_model_completions(batch):
         prompts = [
-            tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True, padding_side='left')  # type: ignore
+            tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)  # type: ignore
             for msgs in batch["prompt"]
         ]
         outputs = text_gen(

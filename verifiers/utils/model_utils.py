@@ -104,5 +104,5 @@ def get_model_and_tokenizer(
     model_name: str, use_liger: bool = True, model_kwargs: dict[str, Any] | None = None
 ) -> tuple[Any, Any]:
     model = get_model(model_name, use_liger, model_kwargs)
-    tokenizer = get_tokenizer(model_name)
+    tokenizer = get_tokenizer(model_name, padding_side='left')
     return model, tokenizer
