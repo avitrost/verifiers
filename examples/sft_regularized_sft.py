@@ -47,6 +47,7 @@ def main(args):
         def _gen_model_completions(batch):
             completions = asyncio.run(_async_generate(batch["prompt"]))
             print(completions)
+            input()
             return {
                 "model_completion": [
                     [{"role": "assistant", "content": text if isinstance(text, str) else str(text)}]
