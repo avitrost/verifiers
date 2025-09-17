@@ -130,7 +130,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", "-m", type=str, default="willcb/Qwen3-1.7B-Base")
+    parser.add_argument("--model", "-m", type=str, default="Qwen/Qwen3-1.7B-Base")
     parser.add_argument("--dataset", "-d", type=str, default="atrost/math_sft_40K_trl")
     parser.add_argument("--output-dir", "-o", type=str, default="outputs")
     parser.add_argument("--name-to-save", "-n", type=str, default="Qwen3-1.7B-Base-SFT-40K")
