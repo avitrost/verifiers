@@ -32,10 +32,11 @@ def main(args):
         outputs = text_gen(
             prompts,
             do_sample=True,
+            max_new_tokens=4096,
             temperature=1.0,
             top_p=1.0,
             return_full_text=False,
-            batch_size=8,
+            batch_size=2,
         )
         completions = [o[0]["generated_text"] for o in outputs]
         print(completions)
