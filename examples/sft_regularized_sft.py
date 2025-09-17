@@ -5,7 +5,9 @@ from trl import SFTConfig, SFTTrainer  # type: ignore
 
 import verifiers as vf
 import torch
+import asyncio
 from transformers import pipeline
+from verifiers.utils.model_utils import VLLMClient
 
 """
 accelerate launch --config-file configs/zero3.yaml --num-processes 8 examples/sft.py
@@ -17,37 +19,71 @@ def main(args):
     model, tokenizer = vf.get_model_and_tokenizer(args.model, use_liger=False)
     dataset = load_dataset(args.dataset, split="train")
 
-    # Add model completions as a new column using a batched generation map
-    text_gen = pipeline(
-        "text-generation",
-        model=model,
-        tokenizer=tokenizer,
-    )
+    # Add model completions as a new column using vLLM if enabled; otherwise fall back to local pipeline
+    if getattr(args, "use_vllm", True):
+        client = VLLMClient(host=getattr(args, "vllm_host", "0.0.0.0"), port=getattr(args, "vllm_port", 8000))
 
-    def _gen_model_completions(batch):
-        prompts = [
-            tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)  # type: ignore
-            for msgs in batch["prompt"]
-        ]
-        outputs = text_gen(
-            prompts,
-            do_sample=True,
-            max_new_tokens=4096,
-            temperature=1.0,
-            top_p=1.0,
-            return_full_text=False,
-            batch_size=2,
+        async def _async_generate(messages_batch):
+            tasks = [
+                client.chat.completions.create(
+                    model=args.model,
+                    messages=messages,  # chat-format already
+                    temperature=1.0,
+                    top_p=1.0,
+                    max_tokens=4096,
+                )
+                for messages in messages_batch
+            ]
+            responses = await asyncio.gather(*tasks)
+            # Extract content from responses
+            contents = []
+            for resp in responses:
+                try:
+                    contents.append(resp.choices[0].message.content)
+                except Exception:
+                    contents.append("")
+            return contents
+
+        def _gen_model_completions(batch):
+            completions = asyncio.run(_async_generate(batch["prompt"]))
+            return {
+                "model_completion": [
+                    [{"role": "assistant", "content": text if isinstance(text, str) else str(text)}]
+                    for text in completions
+                ]
+            }
+
+        dataset = dataset.map(_gen_model_completions, batched=True, batch_size=64)
+    else:
+        text_gen = pipeline(
+            "text-generation",
+            model=model,
+            tokenizer=tokenizer,
         )
-        completions = [o[0]["generated_text"] for o in outputs]
-        print(completions)
-        input()
-        # Store as chat-style messages to mirror existing schema
-        return {
-            "model_completion": [[{"role": "assistant", "content": text}] for text in completions]
-        }
 
-    with torch.inference_mode():
-        dataset = dataset.map(_gen_model_completions, batched=True, batch_size=32)
+        def _gen_model_completions(batch):
+            prompts = [
+                tokenizer.apply_chat_template(
+                    msgs, tokenize=False, add_generation_prompt=True
+                )  # type: ignore
+                for msgs in batch["prompt"]
+            ]
+            outputs = text_gen(
+                prompts,
+                do_sample=True,
+                max_new_tokens=4096,
+                temperature=1.0,
+                top_p=1.0,
+                return_full_text=False,
+                batch_size=2,
+            )
+            completions = [o[0]["generated_text"] for o in outputs]
+            return {
+                "model_completion": [[{"role": "assistant", "content": text}] for text in completions]
+            }
+
+        with torch.inference_mode():
+            dataset = dataset.map(_gen_model_completions, batched=True, batch_size=32)
 
     tok_counts = []
     for row in dataset:
@@ -106,5 +142,8 @@ if __name__ == "__main__":
     parser.add_argument("--weight-decay", "-w", type=float, default=0.01)
     parser.add_argument("--max-grad-norm", "-g", type=float, default=0.1)
     parser.add_argument("--push-to-hub", "-p", type=bool, default=True)
+    parser.add_argument("--use-vllm", type=bool, default=True)
+    parser.add_argument("--vllm-host", type=str, default="0.0.0.0")
+    parser.add_argument("--vllm-port", type=int, default=8000)
     args = parser.parse_args()
     main(args)
