@@ -22,6 +22,7 @@ def main(args):
         "text-generation",
         model=model,
         tokenizer=tokenizer,
+        padding_side='left',
     )
 
     def _gen_model_completions(batch):
