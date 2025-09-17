@@ -94,9 +94,9 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", "-m", type=str, default="willcb/Qwen3-1.7B-Base")
-    parser.add_argument("--dataset", "-d", type=str, default="willcb/V3-wordle")
+    parser.add_argument("--dataset", "-d", type=str, default="atrost/math_sft_40K_trl")
     parser.add_argument("--output-dir", "-o", type=str, default="outputs")
-    parser.add_argument("--name-to-save", "-n", type=str, default="Qwen3-1.7B-Wordle")
+    parser.add_argument("--name-to-save", "-n", type=str, default="Qwen3-1.7B-Base-SFT-40K")
     parser.add_argument("--max-length", "-l", type=int, default=8192)
     parser.add_argument("--per-device-train-batch-size", "-b", type=int, default=2)
     parser.add_argument("--gradient-accumulation-steps", "-a", type=int, default=1)
