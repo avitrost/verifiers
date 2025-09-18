@@ -154,16 +154,12 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
         (loss, outputs) = super(SFTTrainer, self).compute_loss(
             model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch
         )
-        # inputs["input_ids"] = inputs["model_completion_input_ids"]
-        # inputs["completion_mask"] = inputs["model_completion_mask"]
-        # inputs["assistant_masks"] = inputs["model_completion_assistant_masks"]
-        # (aux_loss, _) = super().compute_loss(
-        #     model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch
-        # )
-        # print("loss", loss)
-        # print("aux_loss", aux_loss)
-        # input()
-        aux_loss = 0.01 * loss
+        inputs["input_ids"] = inputs["model_completion_input_ids"]
+        inputs["completion_mask"] = inputs["model_completion_mask"]
+        inputs["assistant_masks"] = inputs["model_completion_assistant_masks"]
+        (aux_loss, _) = super().compute_loss(
+            model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch
+        )
 
         # Add auxiliary loss if available
         if self.aux_loss_enabled and self.aux_loss_coef:
