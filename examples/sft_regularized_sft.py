@@ -90,15 +90,15 @@ def main(args):
         logging_steps=1,
         save_only_model=True,
         log_on_each_node=True,
-        push_to_hub=True,
+        push_to_hub=args.push_to_hub,
         hub_model_id=args.name_to_save
     )
 
-    trainer = SFTTrainer( # SFTRegularizedSFTTrainer(
+    trainer = SFTRegularizedSFTTrainer(
         model=model,
         args=args,
         train_dataset=dataset,  # type: ignore
-        # aux_loss_coef=aux_loss_coef,
+        aux_loss_coef=aux_loss_coef,
     )
     print(trainer)
     print(dataset[0])
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     parser.add_argument("--num-train-epochs", "-e", type=int, default=3)
     parser.add_argument("--weight-decay", "-w", type=float, default=0.01)
     parser.add_argument("--max-grad-norm", "-g", type=float, default=0.1)
-    parser.add_argument("--push-to-hub", "-p", type=bool, default=True)
+    parser.add_argument("--push-to-hub", "-p", type=bool, default=False)
     parser.add_argument("--use-vllm", type=bool, default=True)
     parser.add_argument("--vllm-host", type=str, default="0.0.0.0")
     parser.add_argument("--vllm-port", type=int, default=8000)
