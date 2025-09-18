@@ -58,6 +58,8 @@ def main(args):
     model, tokenizer = vf.get_model_and_tokenizer(args.model, use_liger=False)
     dataset = load_dataset(args.dataset, split="train")
 
+    model.compile()
+
     # Add model completions as a new column using vLLM if enabled; otherwise fall back to local pipeline
     if args.use_vllm:
         client = VLLMClient(host=getattr(args, "vllm_host", "0.0.0.0"), port=getattr(args, "vllm_port", 8000))
@@ -131,7 +133,6 @@ def main(args):
         log_on_each_node=True,
         push_to_hub=args.push_to_hub,
         hub_model_id=args.name_to_save,
-        static_graph=True,
     )
 
     trainer = SFTRegularizedSFTTrainer(
