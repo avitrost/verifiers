@@ -50,11 +50,11 @@ class DataCollatorWithModelCompletion(DataCollatorForLanguageModeling):
         print("out", out)
         examples_clone = examples.copy()
         print("examples_clone", examples_clone)
-        examples_clone["input_ids"] = [x["model_completion_input_ids"] for x in examples_clone]
-        examples_clone["completion_mask"] = [x["model_completion_mask"] for x in examples_clone]
-        
-        if "model_completion_assistant_masks" in examples_clone[0]:
-            examples_clone["assistant_masks"] = [x["model_completion_assistant_masks"] for x in examples_clone]
+        for x in examples_clone:
+            x["input_ids"] = x["model_completion_input_ids"]
+            x["completion_mask"] = x["model_completion_mask"]
+            if "model_completion_assistant_masks" in x:
+                x["assistant_masks"] = x["model_completion_assistant_masks"]
         
         out_with_mc = super().torch_call(examples_clone)
 
