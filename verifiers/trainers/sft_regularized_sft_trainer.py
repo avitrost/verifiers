@@ -154,10 +154,11 @@ def is_conversational(example: dict[str, Any]) -> bool: # adapted from trl
 
 
 class SFTRegularizedSFTTrainer(SFTTrainer):
-    def __init__(self, aux_loss_coef, *args, **kwargs):
+    def __init__(self, aux_loss_coef, normalize_loss, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.aux_loss_enabled = True
         self.aux_loss_coef = aux_loss_coef
+        self.normalize_loss = normalize_loss
 
         tokenizer = self.tokenizer
         use_flash_attention = self.model.config._attn_implementation in [
@@ -210,7 +211,10 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
 
         # Add auxiliary loss if available
         if self.aux_loss_enabled and self.aux_loss_coef:
+            assert self.aux_loss_coef >= 0, "Auxiliary loss coefficient is negative"
             loss += self.aux_loss_coef * aux_loss
+            if self.normalize_loss:
+                loss = loss / (self.aux_loss_coef + 1)
         else:
             raise ValueError("Auxiliary loss is not enabled")
 
