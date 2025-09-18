@@ -440,6 +440,3 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
                 dataset = dataset.select_columns(collator_expected_keys.intersection(dataset.column_names))
 
         return dataset
-
-    def train(self):
-        pass
