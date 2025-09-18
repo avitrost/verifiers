@@ -163,7 +163,7 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
             "kernels-community/vllm-flash-attn3",
         ]
 
-        pad_token = args.pad_token or tokenizer.pad_token or tokenizer.eos_token
+        pad_token = self.args.pad_token or tokenizer.pad_token or tokenizer.eos_token
         pad_token_id = tokenizer.convert_tokens_to_ids(pad_token)
         if pad_token_id is None:
             raise ValueError(
@@ -177,7 +177,7 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
                 padding_free=self.padding_free,
                 # Using position_ids without flash_attn hurts the training
                 return_position_ids=use_flash_attention,
-                pad_to_multiple_of=args.pad_to_multiple_of,
+                pad_to_multiple_of=self.args.pad_to_multiple_of,
             )
         self.data_collator = data_collator
 
