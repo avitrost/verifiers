@@ -118,14 +118,11 @@ def main(args):
         per_device_train_batch_size=args.per_device_train_batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         gradient_checkpointing=True,
-        gradient_checkpointing_kwargs={"use_reentrant": False},
         bf16=True,
         learning_rate=args.learning_rate,
         num_train_epochs=args.num_train_epochs,
         weight_decay=args.weight_decay,
         max_grad_norm=args.max_grad_norm,
-        ddp_find_unused_parameters=False,
-        ddp_static_graph=True,
         report_to="wandb",
         save_strategy="epoch",
         save_total_limit=1,
@@ -133,7 +130,8 @@ def main(args):
         save_only_model=True,
         log_on_each_node=True,
         push_to_hub=args.push_to_hub,
-        hub_model_id=args.name_to_save
+        hub_model_id=args.name_to_save,
+        static_graph=True,
     )
 
     trainer = SFTRegularizedSFTTrainer(
