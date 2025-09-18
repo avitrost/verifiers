@@ -70,7 +70,7 @@ def main(args):
         "temperature": args.temperature,
         "top_p": args.top_p,
         "max_tokens": args.max_tokens,
-        "script_version": "v2",
+        "script_version": "v3",
     }
     cache_key = hashlib.sha256(
         json.dumps(cache_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -91,7 +91,7 @@ def main(args):
                 max_tokens=args.max_tokens,
             ),
             batched=True,
-            batch_size=128,
+            batch_size=1024,
         )
         dataset.save_to_disk(str(cache_path))
 
