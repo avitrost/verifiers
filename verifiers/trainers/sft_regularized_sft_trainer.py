@@ -34,7 +34,7 @@ from transformers import (
     is_wandb_available,
 )
 from trl.trainer.sft_config import SFTConfig
-from trl.trainer.sft_trainer import remove_none_values
+from trl.trainer.sft_trainer import remove_none_values, DataCollatorForLanguageModeling
 
 import torch
 import torch.nn as nn
@@ -42,6 +42,23 @@ from typing import Any, Optional, Union, Callable
 from accelerate import PartialState, logging
 
 logger = logging.get_logger(__name__)
+
+class DataCollatorWithModelCompletion(DataCollatorForLanguageModeling):
+    def torch_call(self, examples):
+        out = super().torch_call(examples)
+        examples_clone = examples.copy()
+        examples_clone["input_ids"] = examples_clone["model_completion_input_ids"]
+        examples_clone["completion_mask"] = examples_clone["model_completion_mask"]
+        examples_clone["assistant_masks"] = examples_clone["model_completion_assistant_masks"]
+        out_with_mc = super().torch_call(examples_clone)
+
+        # combine out and out_with_mc
+        out["model_completion_input_ids"] = out_with_mc["input_ids"]
+        out["model_completion_attention_mask"] = out_with_mc["attention_mask"]
+        out["model_completion_position_ids"] = out_with_mc["position_ids"]
+        out["model_completion_labels"] = out_with_mc["labels"]
+
+        return out
 
 def maybe_convert_to_chatml(example: dict[str, list]) -> dict[str, list]: # adapted from trl
     """
@@ -139,6 +156,31 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
         self.aux_loss_enabled = True
         self.aux_loss_coef = aux_loss_coef
 
+        tokenizer = self.tokenizer
+        use_flash_attention = self.model.config._attn_implementation in [
+            "flash_attention_2",
+            "flash_attention_3",
+            "kernels-community/vllm-flash-attn3",
+        ]
+
+        pad_token = args.pad_token or tokenizer.pad_token or tokenizer.eos_token
+        pad_token_id = tokenizer.convert_tokens_to_ids(pad_token)
+        if pad_token_id is None:
+            raise ValueError(
+                f"The specified `pad_token` ('{pad_token}') is not found in the vocabulary of the given "
+                f"`tokenizer` ({tokenizer.__class__.__name__}). Ensure that the `pad_token` exists "
+                "in the vocabulary before using it as a padding token."
+            )
+        data_collator = DataCollatorWithModelCompletion(
+                pad_token_id=pad_token_id,
+                completion_only_loss=self.completion_only_loss,
+                padding_free=self.padding_free,
+                # Using position_ids without flash_attn hurts the training
+                return_position_ids=use_flash_attention,
+                pad_to_multiple_of=args.pad_to_multiple_of,
+            )
+        self.data_collator = data_collator
+
     def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
         """
         Compute training loss and additionally compute token accuracies
@@ -159,6 +201,7 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
         inputs["input_ids"] = inputs["model_completion_input_ids"]
         inputs["completion_mask"] = inputs["model_completion_mask"]
         inputs["assistant_masks"] = inputs["model_completion_assistant_masks"]
+        inputs["labels"] = inputs["model_completion_labels"]
         (aux_loss, _) = super().compute_loss(
             model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch
         )
