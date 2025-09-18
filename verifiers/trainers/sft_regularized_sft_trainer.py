@@ -45,8 +45,11 @@ logger = logging.get_logger(__name__)
 
 class DataCollatorWithModelCompletion(DataCollatorForLanguageModeling):
     def torch_call(self, examples):
+        print("examples", examples)
         out = super().torch_call(examples)
+        print("out", out)
         examples_clone = examples.copy()
+        print("examples_clone", examples_clone)
         examples_clone["input_ids"] = examples_clone["model_completion_input_ids"]
         examples_clone["completion_mask"] = examples_clone["model_completion_mask"]
         examples_clone["assistant_masks"] = examples_clone["model_completion_assistant_masks"]
