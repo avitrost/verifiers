@@ -193,27 +193,19 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
         # Set aside labels as it will be dropped by super().compute_loss() if a custom `compute_loss_func` is used.
         # This can be removed when this issue is fixed.
         labels = inputs["labels"]
-        print("SHAPES")
-        print("input_ids", inputs["input_ids"].shape)
-        print("attention_mask", inputs["attention_mask"].shape)
-        print("position_ids", inputs["position_ids"].shape)
-        print("labels", inputs["labels"].shape)
-        print("model_completion_input_ids", inputs["model_completion_input_ids"].shape)
-        print("model_completion_attention_mask", inputs["model_completion_attention_mask"].shape)
-        print("model_completion_position_ids", inputs["model_completion_position_ids"].shape)
-        print("model_completion_labels", inputs["model_completion_labels"].shape)
 
         # If not set, defaults from model config and may warn since cache isn't compatible with gradient checkpointing
         inputs["use_cache"] = False
         (loss, outputs) = super(SFTTrainer, self).compute_loss(
             model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch
         )
-        inputs["input_ids"] = inputs["model_completion_input_ids"]
-        inputs["attention_mask"] = inputs["model_completion_attention_mask"]
-        inputs["position_ids"] = inputs["model_completion_position_ids"]
-        inputs["labels"] = inputs["model_completion_labels"]
+        inputs_clone = inputs.copy()
+        inputs_clone["input_ids"] = inputs["model_completion_input_ids"]
+        inputs_clone["attention_mask"] = inputs["model_completion_attention_mask"]
+        inputs_clone["position_ids"] = inputs["model_completion_position_ids"]
+        inputs_clone["labels"] = inputs["model_completion_labels"]
         (aux_loss, _) = super(SFTTrainer, self).compute_loss(
-            model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch
+            model, inputs_clone, return_outputs=True, num_items_in_batch=num_items_in_batch
         )
 
         # Add auxiliary loss if available
