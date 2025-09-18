@@ -98,7 +98,11 @@ def main(args):
         args=args,
         train_dataset=dataset,  # type: ignore
     )
+    print(trainer)
+    print(dataset[0])
+    print(trainer.train_dataset[0])
     trainer.train()
+    print('done')
 
 
 if __name__ == "__main__":
