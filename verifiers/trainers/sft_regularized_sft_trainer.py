@@ -163,10 +163,11 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
         # print("loss", loss)
         # print("aux_loss", aux_loss)
         # input()
+        aux_loss = 0
 
         # Add auxiliary loss if available
         if self.aux_loss_enabled and self.aux_loss_coef:
-            loss += self.aux_loss_coef *aux_loss
+            loss += self.aux_loss_coef * aux_loss
         else:
             raise ValueError("Auxiliary loss is not enabled")
 
