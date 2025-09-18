@@ -59,7 +59,10 @@ def main(args):
     dataset = load_dataset(args.dataset, split="train")
 
     # Add model completions as a new column using vLLM if enabled; otherwise fall back to local pipeline
-    client = VLLMClient(host=getattr(args, "vllm_host", "0.0.0.0"), port=getattr(args, "vllm_port", 8000))
+    if args.use_vllm:
+        client = VLLMClient(host=getattr(args, "vllm_host", "0.0.0.0"), port=getattr(args, "vllm_port", 8000))
+    else:
+        client = None
 
     # Compute a cache key based on dataset fingerprint, model, and generation params
     dataset_fingerprint = getattr(dataset, "_fingerprint", None) or "no_fingerprint"
