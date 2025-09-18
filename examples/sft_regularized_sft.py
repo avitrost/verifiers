@@ -111,7 +111,7 @@ if __name__ == "__main__":
     parser.add_argument("--output-dir", "-o", type=str, default="outputs")
     parser.add_argument("--name-to-save", "-n", type=str, default="Qwen3-1.7B-Base-SFT-40K")
     parser.add_argument("--max-length", "-l", type=int, default=8192)
-    parser.add_argument("--per-device-train-batch-size", "-b", type=int, default=2)
+    parser.add_argument("--per-device-train-batch-size", "-b", type=int, default=1)
     parser.add_argument("--gradient-accumulation-steps", "-a", type=int, default=1)
     parser.add_argument("--learning-rate", "-r", type=float, default=2e-5)
     parser.add_argument("--num-train-epochs", "-e", type=int, default=3)
