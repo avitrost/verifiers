@@ -154,6 +154,8 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
         (loss, outputs) = super(SFTTrainer, self).compute_loss(
             model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch
         )
+        print(inputs)
+        input()
         inputs["input_ids"] = inputs["model_completion_input_ids"]
         inputs["completion_mask"] = inputs["model_completion_mask"]
         inputs["assistant_masks"] = inputs["model_completion_assistant_masks"]

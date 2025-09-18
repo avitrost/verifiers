@@ -100,9 +100,6 @@ def main(args):
         train_dataset=dataset,  # type: ignore
         aux_loss_coef=aux_loss_coef,
     )
-    print(trainer)
-    print(dataset[0])
-    print(trainer.train_dataset[0])
     trainer.train()
     print('done')
 
