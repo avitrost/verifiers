@@ -289,6 +289,17 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
 
         return (loss, outputs) if return_outputs else loss
 
+    def _set_signature_columns_if_needed(self):
+        # If `self.args.remove_unused_columns` is True, non-signature columns are removed.
+        # By default, this method sets `self._signature_columns` to the model's expected inputs (usually, "input_ids"
+        # and "attention_mask"). When using `train_on_completion_only` we add a "completion_mask" column to the
+        # dataset. So we need to override the default signature columns to include "completion_mask" as well.
+        if self._signature_columns is None:
+            if self._is_vlm:
+                self._signature_columns = ["messages", "prompt", "completion", "images", "model_completion"]
+            else:
+                self._signature_columns = ["input_ids", "labels", "seq_lengths", "completion_mask", "assistant_masks", "model_completion_input_ids", "model_completion_mask", "model_completion_assistant_masks"]
+
     def _prepare_dataset(
         self,
         dataset: Union[Dataset, IterableDataset],
