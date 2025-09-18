@@ -13,6 +13,38 @@ from verifiers.inference.vllm_client import VLLMClient
 accelerate launch --config-file configs/zero3.yaml --num-processes 8 examples/sft.py
 """
 
+def make_gen_model_completions(client, model_name: str):
+    async def _async_generate(messages_batch):
+        tasks = [
+            client.chat.completions.create(
+                model=model_name,
+                messages=messages,  # chat-format already
+                temperature=1.0,
+                top_p=1.0,
+                max_tokens=4096,
+            )
+            for messages in messages_batch
+        ]
+        responses = await asyncio.gather(*tasks)
+        contents = []
+        for resp in responses:
+            try:
+                contents.append(resp.choices[0].message.content)
+            except Exception:
+                contents.append("")
+        return contents
+
+    def _gen_model_completions(batch):
+        completions = asyncio.run(_async_generate(batch["prompt"]))
+        return {
+            "model_completion": [
+                [{"role": "assistant", "content": text if isinstance(text, str) else str(text)}]
+                for text in completions
+            ]
+        }
+
+    return _gen_model_completions
+
 
 def main(args):
     # convenience function for FA2 initialization
@@ -20,72 +52,9 @@ def main(args):
     dataset = load_dataset(args.dataset, split="train")
 
     # Add model completions as a new column using vLLM if enabled; otherwise fall back to local pipeline
-    if getattr(args, "use_vllm", True):
-        client = VLLMClient(host=getattr(args, "vllm_host", "0.0.0.0"), port=getattr(args, "vllm_port", 8000))
+    client = VLLMClient(host=getattr(args, "vllm_host", "0.0.0.0"), port=getattr(args, "vllm_port", 8000))
 
-        async def _async_generate(messages_batch):
-            tasks = [
-                client.chat.completions.create(
-                    model=args.model,
-                    messages=messages,  # chat-format already
-                    temperature=1.0,
-                    top_p=1.0,
-                    max_tokens=4096,
-                )
-                for messages in messages_batch
-            ]
-            responses = await asyncio.gather(*tasks)
-            # Extract content from responses
-            contents = []
-            for resp in responses:
-                try:
-                    contents.append(resp.choices[0].message.content)
-                except Exception:
-                    contents.append("")
-            return contents
-
-        def _gen_model_completions(batch):
-            completions = asyncio.run(_async_generate(batch["prompt"]))
-            print(completions)
-            input()
-            return {
-                "model_completion": [
-                    [{"role": "assistant", "content": text if isinstance(text, str) else str(text)}]
-                    for text in completions
-                ]
-            }
-
-        dataset = dataset.map(_gen_model_completions, batched=True, batch_size=2)
-    else:
-        text_gen = pipeline(
-            "text-generation",
-            model=model,
-            tokenizer=tokenizer,
-        )
-
-        def _gen_model_completions(batch):
-            prompts = [
-                tokenizer.apply_chat_template(
-                    msgs, tokenize=False, add_generation_prompt=True
-                )  # type: ignore
-                for msgs in batch["prompt"]
-            ]
-            outputs = text_gen(
-                prompts,
-                do_sample=True,
-                max_new_tokens=4096,
-                temperature=1.0,
-                top_p=1.0,
-                return_full_text=False,
-                batch_size=2,
-            )
-            completions = [o[0]["generated_text"] for o in outputs]
-            return {
-                "model_completion": [[{"role": "assistant", "content": text}] for text in completions]
-            }
-
-        with torch.inference_mode():
-            dataset = dataset.map(_gen_model_completions, batched=True, batch_size=32)
+    dataset = dataset.map(make_gen_model_completions(client, args.model), batched=True, batch_size=4096)
 
     tok_counts = []
     for row in dataset:
