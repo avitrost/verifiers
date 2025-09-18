@@ -210,7 +210,7 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
         )
 
         # Add auxiliary loss if available
-        if self.aux_loss_enabled and self.aux_loss_coef:
+        if self.aux_loss_enabled:
             assert self.aux_loss_coef >= 0, "Auxiliary loss coefficient is negative"
             loss += self.aux_loss_coef * aux_loss
             if self.normalize_loss:
