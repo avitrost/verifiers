@@ -245,7 +245,7 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
 
         return (loss, outputs) if return_outputs else loss
 
-    def _prepare_dataset2(
+    def _prepare_dataset(
         self,
         dataset: Union[Dataset, IterableDataset],
         processing_class: Union[PreTrainedTokenizerBase, BaseImageProcessor, FeatureExtractionMixin, ProcessorMixin],

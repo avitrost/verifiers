@@ -57,7 +57,7 @@ def main(args):
     # Add model completions as a new column using vLLM if enabled; otherwise fall back to local pipeline
     client = VLLMClient(host=getattr(args, "vllm_host", "0.0.0.0"), port=getattr(args, "vllm_port", 8000))
 
-    dataset = dataset.map(make_gen_model_completions(client, args.model), batched=True, batch_size=8)
+    # dataset = dataset.map(make_gen_model_completions(client, args.model), batched=True, batch_size=8)
 
     tok_counts = []
     for row in dataset:
@@ -94,11 +94,11 @@ def main(args):
         hub_model_id=args.name_to_save
     )
 
-    trainer = SFTRegularizedSFTTrainer(
+    trainer = SFTTrainer( # SFTRegularizedSFTTrainer(
         model=model,
         args=args,
         train_dataset=dataset,  # type: ignore
-        aux_loss_coef=aux_loss_coef,
+        # aux_loss_coef=aux_loss_coef,
     )
     print(trainer)
     print(dataset[0])
