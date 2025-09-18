@@ -149,9 +149,7 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
 
         # If not set, defaults from model config and may warn since cache isn't compatible with gradient checkpointing
         inputs["use_cache"] = False
-        print("inputs", inputs)
-        input()
-        (loss, outputs) = super().super().compute_loss(
+        (loss, outputs) = super(SFTTrainer, self).compute_loss(
             model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch
         )
         # inputs["input_ids"] = inputs["model_completion_input_ids"]
