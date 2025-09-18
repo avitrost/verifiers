@@ -91,6 +91,8 @@ def main(args):
         log_on_each_node=True,
         push_to_hub=True,
         hub_model_id=args.name_to_save,
+        aux_loss_enabled=True,
+        aux_loss_coef=0.1,
     )
 
     trainer = SFTRegularizedSFTTrainer(
