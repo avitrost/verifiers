@@ -1,5 +1,5 @@
 from trl import SFTTrainer
-from trl.utils import (
+from trl.trainer.utils import (
     entropy_from_logits,
     flush_left,
     generate_model_card,
