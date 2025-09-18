@@ -61,16 +61,16 @@ def main(args):
     # Add model completions as a new column using vLLM if enabled; otherwise fall back to local pipeline
     client = VLLMClient(host=getattr(args, "vllm_host", "0.0.0.0"), port=getattr(args, "vllm_port", 8000))
 
-    # Compute a cache key based on prompts, model, and generation params
-    prompts = dataset["prompt"]
+    # Compute a cache key based on dataset fingerprint, model, and generation params
+    dataset_fingerprint = getattr(dataset, "_fingerprint", None) or "no_fingerprint"
     cache_payload = {
         "dataset": args.dataset,
-        "num_rows": len(prompts),
-        "prompts": prompts,
+        "dataset_fingerprint": dataset_fingerprint,
         "model": args.model,
         "temperature": args.temperature,
         "top_p": args.top_p,
         "max_tokens": args.max_tokens,
+        "script_version": "v1",
     }
     cache_key = hashlib.sha256(
         json.dumps(cache_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
