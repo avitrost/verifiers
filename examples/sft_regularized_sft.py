@@ -1,6 +1,10 @@
 import argparse
+import os
+import json
+import hashlib
+from pathlib import Path
 
-from datasets import load_dataset
+from datasets import load_dataset, load_from_disk
 from trl import SFTConfig, SFTTrainer  # type: ignore
 
 import verifiers as vf
@@ -15,15 +19,15 @@ from verifiers.trainers.sft_regularized_sft_trainer import SFTRegularizedSFTTrai
 accelerate launch --config-file configs/zero3.yaml --num-processes 8 examples/sft.py
 """
 
-def make_gen_model_completions(client, model_name: str):
+def make_gen_model_completions(client, model_name: str, temperature: float, top_p: float, max_tokens: int):
     async def _async_generate(messages_batch):
         tasks = [
             client.chat.completions.create(
                 model=model_name,
                 messages=messages,  # chat-format already
-                temperature=1.0,
-                top_p=1.0,
-                max_tokens=4096,
+                temperature=temperature,
+                top_p=top_p,
+                max_tokens=max_tokens,
             )
             for messages in messages_batch
         ]
@@ -57,7 +61,39 @@ def main(args):
     # Add model completions as a new column using vLLM if enabled; otherwise fall back to local pipeline
     client = VLLMClient(host=getattr(args, "vllm_host", "0.0.0.0"), port=getattr(args, "vllm_port", 8000))
 
-    dataset = dataset.map(make_gen_model_completions(client, args.model), batched=True, batch_size=8)
+    # Compute a cache key based on prompts, model, and generation params
+    prompts = dataset["prompt"]
+    cache_payload = {
+        "dataset": args.dataset,
+        "num_rows": len(prompts),
+        "prompts": prompts,
+        "model": args.model,
+        "temperature": args.temperature,
+        "top_p": args.top_p,
+        "max_tokens": args.max_tokens,
+    }
+    cache_key = hashlib.sha256(
+        json.dumps(cache_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    cache_dir = Path(args.mc_cache_dir or os.path.join(args.output_dir, "mc_cache"))
+    cache_path = cache_dir / cache_key
+    os.makedirs(cache_dir, exist_ok=True)
+
+    if cache_path.exists():
+        dataset = load_from_disk(str(cache_path))
+    else:
+        dataset = dataset.map(
+            make_gen_model_completions(
+                client,
+                args.model,
+                temperature=args.temperature,
+                top_p=args.top_p,
+                max_tokens=args.max_tokens,
+            ),
+            batched=True,
+            batch_size=128,
+        )
+        dataset.save_to_disk(str(cache_path))
 
     tok_counts = []
     for row in dataset:
@@ -74,7 +110,7 @@ def main(args):
     print(f"Median tokens: {sorted(tok_counts)[len(tok_counts) // 2]}")
 
     args = SFTConfig(
-        max_length=args.max_length,
+        max_length=None, # args.max_length,
         output_dir=args.output_dir,
         per_device_train_batch_size=args.per_device_train_batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
@@ -109,18 +145,24 @@ if __name__ == "__main__":
     parser.add_argument("--model", "-m", type=str, default="Qwen/Qwen3-1.7B-Base")
     parser.add_argument("--dataset", "-d", type=str, default="atrost/math_sft_40K_trl")
     parser.add_argument("--output-dir", "-o", type=str, default="outputs")
-    parser.add_argument("--name-to-save", "-n", type=str, default="Qwen3-1.7B-Base-SFT-40K")
+    parser.add_argument("--name-to-save", "-n", type=str, default="atrost/math_sft_40K_trl_SFT_Regularized-0.1")
     parser.add_argument("--max-length", "-l", type=int, default=8192)
-    parser.add_argument("--per-device-train-batch-size", "-b", type=int, default=1)
+    parser.add_argument("--per-device-train-batch-size", "-b", type=int, default=8)
     parser.add_argument("--gradient-accumulation-steps", "-a", type=int, default=1)
     parser.add_argument("--learning-rate", "-r", type=float, default=2e-5)
     parser.add_argument("--num-train-epochs", "-e", type=int, default=3)
     parser.add_argument("--weight-decay", "-w", type=float, default=0.01)
     parser.add_argument("--max-grad-norm", "-g", type=float, default=0.1)
-    parser.add_argument("--push-to-hub", "-p", type=bool, default=False)
+    parser.add_argument("--push-to-hub", "-p", type=bool, default=True)
     parser.add_argument("--use-vllm", type=bool, default=True)
     parser.add_argument("--vllm-host", type=str, default="0.0.0.0")
     parser.add_argument("--vllm-port", type=int, default=8000)
     parser.add_argument("--aux-loss-coef", type=float, default=0.1)
+    # Sampling params for model completion generation (affect cache key)
+    parser.add_argument("--temperature", type=float, default=1.0)
+    parser.add_argument("--top-p", type=float, default=1.0)
+    parser.add_argument("--max-tokens", type=int, default=4096)
+    # Cache directory for model completion datasets
+    parser.add_argument("--mc-cache-dir", type=str, default=None)
     args = parser.parse_args()
     main(args)
