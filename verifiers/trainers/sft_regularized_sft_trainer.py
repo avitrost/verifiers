@@ -151,7 +151,7 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
         inputs["use_cache"] = False
         print("inputs", inputs)
         input()
-        (loss, outputs) = super().compute_loss(
+        (loss, outputs) = super().super().compute_loss(
             model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch
         )
         # inputs["input_ids"] = inputs["model_completion_input_ids"]
