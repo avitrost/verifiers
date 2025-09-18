@@ -50,6 +50,7 @@ def make_gen_model_completions(client, model_name: str):
 
 def main(args):
     # convenience function for FA2 initialization
+    aux_loss_coef = args.aux_loss_coef
     model, tokenizer = vf.get_model_and_tokenizer(args.model, use_liger=False)
     dataset = load_dataset(args.dataset, split="train").select(range(16))
 
@@ -97,7 +98,7 @@ def main(args):
         model=model,
         args=args,
         train_dataset=dataset,  # type: ignore
-        aux_loss_coef=args.aux_loss_coef,
+        aux_loss_coef=aux_loss_coef,
     )
     print(trainer)
     print(dataset[0])
