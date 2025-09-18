@@ -54,7 +54,7 @@ def main(args):
     # Add model completions as a new column using vLLM if enabled; otherwise fall back to local pipeline
     client = VLLMClient(host=getattr(args, "vllm_host", "0.0.0.0"), port=getattr(args, "vllm_port", 8000))
 
-    dataset = dataset.map(make_gen_model_completions(client, args.model), batched=True, batch_size=4096)
+    dataset = dataset.map(make_gen_model_completions(client, args.model), batched=True, batch_size=128)
 
     tok_counts = []
     for row in dataset:
