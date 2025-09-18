@@ -134,8 +134,10 @@ def is_conversational(example: dict[str, Any]) -> bool: # adapted from trl
 
 
 class SFTRegularizedSFTTrainer(SFTTrainer):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, aux_loss_coef, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.aux_loss_enabled = True
+        self.aux_loss_coef = aux_loss_coef
 
     def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
         """

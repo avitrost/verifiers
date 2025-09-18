@@ -90,15 +90,14 @@ def main(args):
         save_only_model=True,
         log_on_each_node=True,
         push_to_hub=True,
-        hub_model_id=args.name_to_save,
-        output_router_logits=True,
-        router_aux_loss_coef=0.1,
+        hub_model_id=args.name_to_save
     )
 
     trainer = SFTRegularizedSFTTrainer(
         model=model,
         args=args,
         train_dataset=dataset,  # type: ignore
+        aux_loss_coef=args.aux_loss_coef,
     )
     print(trainer)
     print(dataset[0])
@@ -124,5 +123,6 @@ if __name__ == "__main__":
     parser.add_argument("--use-vllm", type=bool, default=True)
     parser.add_argument("--vllm-host", type=str, default="0.0.0.0")
     parser.add_argument("--vllm-port", type=int, default=8000)
+    parser.add_argument("--aux-loss-coef", type=float, default=0.1)
     args = parser.parse_args()
     main(args)
