@@ -6,8 +6,10 @@ from trl import SFTConfig, SFTTrainer  # type: ignore
 import verifiers as vf
 import torch
 import asyncio
+import weave
 from transformers import pipeline
 from verifiers.inference.vllm_client import VLLMClient
+from verifiers.trainers.sft_regularized_sft_trainer import SFTRegularizedSFTTrainer
 
 """
 accelerate launch --config-file configs/zero3.yaml --num-processes 8 examples/sft.py
@@ -49,12 +51,12 @@ def make_gen_model_completions(client, model_name: str):
 def main(args):
     # convenience function for FA2 initialization
     model, tokenizer = vf.get_model_and_tokenizer(args.model, use_liger=False)
-    dataset = load_dataset(args.dataset, split="train")
+    dataset = load_dataset(args.dataset, split="train").select(range(16))
 
     # Add model completions as a new column using vLLM if enabled; otherwise fall back to local pipeline
     client = VLLMClient(host=getattr(args, "vllm_host", "0.0.0.0"), port=getattr(args, "vllm_port", 8000))
 
-    dataset = dataset.map(make_gen_model_completions(client, args.model), batched=True, batch_size=128)
+    dataset = dataset.map(make_gen_model_completions(client, args.model), batched=True, batch_size=8)
 
     tok_counts = []
     for row in dataset:
@@ -91,7 +93,7 @@ def main(args):
         hub_model_id=args.name_to_save,
     )
 
-    trainer = SFTTrainer(
+    trainer = SFTRegularizedSFTTrainer(
         model=model,
         args=args,
         train_dataset=dataset,  # type: ignore
