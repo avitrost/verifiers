@@ -205,8 +205,8 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
         print(inputs)
         input()
         inputs["input_ids"] = inputs["model_completion_input_ids"]
-        inputs["completion_mask"] = inputs["model_completion_mask"]
-        inputs["assistant_masks"] = inputs["model_completion_assistant_masks"]
+        inputs["attention_mask"] = inputs["model_completion_attention_mask"]
+        inputs["position_ids"] = inputs["model_completion_position_ids"]
         inputs["labels"] = inputs["model_completion_labels"]
         (aux_loss, _) = super().compute_loss(
             model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch
