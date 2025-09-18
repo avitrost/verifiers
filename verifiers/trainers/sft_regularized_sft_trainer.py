@@ -45,11 +45,8 @@ logger = logging.get_logger(__name__)
 
 class DataCollatorWithModelCompletion(DataCollatorForLanguageModeling):
     def torch_call(self, examples):
-        print("examples", examples)
         out = super().torch_call(examples)
-        print("out", out)
         examples_clone = examples.copy()
-        print("examples_clone", examples_clone)
         for x in examples_clone:
             x["input_ids"] = x["model_completion_input_ids"]
             x["completion_mask"] = x["model_completion_mask"]
@@ -202,13 +199,11 @@ class SFTRegularizedSFTTrainer(SFTTrainer):
         (loss, outputs) = super(SFTTrainer, self).compute_loss(
             model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch
         )
-        print(inputs)
-        input()
         inputs["input_ids"] = inputs["model_completion_input_ids"]
         inputs["attention_mask"] = inputs["model_completion_attention_mask"]
         inputs["position_ids"] = inputs["model_completion_position_ids"]
         inputs["labels"] = inputs["model_completion_labels"]
-        (aux_loss, _) = super().compute_loss(
+        (aux_loss, _) = super(SFTTrainer, self).compute_loss(
             model, inputs, return_outputs=True, num_items_in_batch=num_items_in_batch
         )
 
