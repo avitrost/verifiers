@@ -7,6 +7,8 @@ set -euo pipefail
 
 cd examples
 
+export WANDB_PROJECT="sft-regularized-sft"
+
 # Default parameters (can be overridden via env vars)
 MODEL=${MODEL:-"Qwen/Qwen3-1.7B-Base"}
 DATASET=${DATASET:-"atrost/math_sft_40K_trl"}
