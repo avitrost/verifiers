@@ -56,7 +56,7 @@ def main(args):
     # convenience function for FA2 initialization
     aux_loss_coef = args.aux_loss_coef
     model, tokenizer = vf.get_model_and_tokenizer(args.model, use_liger=False)
-    dataset = load_dataset(args.dataset, split="train").select(range(16))
+    dataset = load_dataset(args.dataset, split="train")
 
     # Add model completions as a new column using vLLM if enabled; otherwise fall back to local pipeline
     client = VLLMClient(host=getattr(args, "vllm_host", "0.0.0.0"), port=getattr(args, "vllm_port", 8000))
@@ -70,7 +70,7 @@ def main(args):
         "temperature": args.temperature,
         "top_p": args.top_p,
         "max_tokens": args.max_tokens,
-        "script_version": "v1",
+        "script_version": "v2",
     }
     cache_key = hashlib.sha256(
         json.dumps(cache_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
