@@ -60,8 +60,8 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", "-m", type=str, default="Qwen/Qwen3-1.7B-Base")
-    parser.add_argument("--dataset", "-d", type=str, default="atrost/math_sft_40K_trl")
+    parser.add_argument("--model", "-m", type=str, default="willcb/Qwen3-1.7B")
+    parser.add_argument("--dataset", "-d", type=str, default="willcb/V3-wordle")
     parser.add_argument("--output-dir", "-o", type=str, default="outputs")
     parser.add_argument("--name-to-save", "-n", type=str, default="Qwen3-1.7B-Wordle")
     parser.add_argument("--max-length", "-l", type=int, default=8192)
@@ -71,6 +71,6 @@ if __name__ == "__main__":
     parser.add_argument("--num-train-epochs", "-e", type=int, default=3)
     parser.add_argument("--weight-decay", "-w", type=float, default=0.01)
     parser.add_argument("--max-grad-norm", "-g", type=float, default=0.1)
-    parser.add_argument("--push-to-hub", "-p", type=bool, default=False)
+    parser.add_argument("--push-to-hub", "-p", type=bool, default=True)
     args = parser.parse_args()
     main(args)
