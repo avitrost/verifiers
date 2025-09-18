@@ -129,7 +129,7 @@ def main(args):
         report_to="wandb",
         save_strategy="epoch",
         save_total_limit=1,
-        logging_steps=10,
+        logging_steps=1,
         save_only_model=True,
         log_on_each_node=True,
         push_to_hub=args.push_to_hub,
