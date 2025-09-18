@@ -160,7 +160,7 @@ if __name__ == "__main__":
     parser.add_argument("--weight-decay", "-w", type=float, default=0.01)
     parser.add_argument("--max-grad-norm", "-g", type=float, default=0.1)
     parser.add_argument("--push-to-hub", "-p", type=bool, default=True)
-    parser.add_argument("--use-vllm", type=bool, default=True)
+    parser.add_argument("--use-vllm", type=bool, default=False)
     parser.add_argument("--vllm-host", type=str, default="0.0.0.0")
     parser.add_argument("--vllm-port", type=int, default=8000)
     parser.add_argument("--aux-loss-coef", type=float, default=0.1)
